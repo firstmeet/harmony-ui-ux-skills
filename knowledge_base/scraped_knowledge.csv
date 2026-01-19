@@ -1,0 +1,286 @@
+﻿title,category,content,code_example,url,scraped_at
+[GitHub] WebComponentsToArkTs (⭐0),resource,将WebComponents解析成harmonyos的ArkTs/ArkUi,,https://github.com/toosui/WebComponentsToArkTs,2026-01-19 11:42:48
+鸿蒙 HarmonyOS 6｜ArkUI（01）：从框架认知到项目骨架,component,"鸿蒙 HarmonyOS 6｜ArkUI（01）：从框架认知到项目骨架
+小雨青年
+2026-01-12
+0
+阅读7分钟
+前言
+这篇我们把 ArkUI 在鸿蒙 6 的底层思路彻底捋顺，然后用一个最小可运行项目把它跑起来。
+我们先讲为什么用声明式 UI、为什么用 Navigation 做导航，再把状态管理、页面组织、参数传递、跳转与返回逐个落地。
+一、ArkUI 到底怎么想
+ArkUI 在鸿蒙 6 走的是声明式范式。换句话说，我们不再“到处发命令改界面”，而是把界面写成组件树，让“状态变化”自动驱动“视图重绘”。
+导航这层，官方明确推荐组件化的
+Navigation
+，配上 NavPathStack 管理“页面栈”，子页由 NavDestination 托管，跳转与返回都走 push/pop 这一套标准动作。这样分工特别干净：导航交给导航容器，页面归页面自己，状态交给状态系统。
+我们还得知道“Router 到 Navigation 的迁移”这件事。
+老项目可能用过 Router 模块；现在官方给出了一份迁移指南，直说了怎么把路由 API 过渡到 Navigation 体系。新项目我们优先直接上 Navigation，老项目按
+文档
+逐步迁移，避免两套范式混用的灰度区。
+二、页面与导航我们怎么组织
+清单里只声明一个入口页，它只有一个 @Entry，应用启动先显示它。其他页面不再写进清单，而是写成 NavDestination 子页，由首页里的 Navigation 容器托管。
+Navigation 拿到一个 NavPathStack 之后，我们就能用 pushPath、pop、replacePath 把“跳转、返回、替换”都标准化，动画和显示模式自然承接。
+拿到 NavPathStack 的正确姿势：子页要操作路由，必须拿到 Navigation 所属的那条栈。
+最稳的方式是用 NavDestination 的 onReady 拿 NavDestinationContext，再从里头读到 context.pathStack；这比直接 @Provide/@Consume 传栈耦合更低，后期重构会更省心。
+三、状态驱动我们怎么落地
+ArkUI 的状态系统提供了一组装饰器来表达数据归属与同步方式：组件内部自己管用
+@State
+，父传子单向同步用
+@Prop
+，需要双向协同时用",,https://juejin.cn/post/7594028166134743040,2026-01-19 11:42:53
+React Router DOM 全面学习笔记：从原理到实战,component,"React Router DOM 全面学习笔记：从原理到实战
+UIUV
+2026-01-18
+9
+阅读21分钟
+React Router DOM 全面学习笔记：从原理到实战
+在 React 生态中，
+react-router-dom
+是实现前端路由、构建单页应用（SPA）的核心库。它解决了单页应用中页面切换、路由匹配、权限控制等关键问题，让前端开发能够脱离后端路由的强依赖，实现更流畅的用户体验。本文将从路由基础、核心用法、实战案例、原理剖析等维度，全面梳理 react-router-dom 的学习要点，结合代码示例深入讲解，助力开发者快速掌握并灵活运用。
+一、前端路由的核心概念
+1.1 路由的演变：从后端到前端
+在前后端未分离的传统开发模式中，路由的控制权完全掌握在后端。前端仅负责页面切图与静态展示，当用户点击链接或输入 URL 时，会向服务器发送 HTTP 请求，后端根据请求路径匹配对应的资源，返回完整的 HTML 页面。这种模式存在明显弊端：每次页面切换都会重新加载整个页面，导致页面白屏、加载速度慢，用户体验较差，此时的前端开发者也被戏称为“切图仔”。
+随着前后端分离架构的普及，前端技术栈日益成熟，HTML5 提供了原生的路由能力，前端路由应运而生。前端路由允许在不刷新整个页面的前提下，通过改变 URL 路径，实现页面组件的切换与内容更新。其核心逻辑是：URL 变化时，前端捕获该事件，通过路由规则匹配对应的组件，在页面中渲染新组件，从而实现“无刷新跳转”，大幅提升用户体验。
+1.2 前端路由的两种实现形式
+react-router-dom 提供了两种主流的路由实现方式，分别基于不同的技术原理，适用于不同场景：
+1.2.1 HashRouter：基于锚点的路由
+HashRouter 利用 URL 中的
+锚点（#）
+实现路由跳转。锚点原本用于定位页面内的元素，其特性是：改变锚点内容不会触发浏览器的页面刷新，仅会触发
+hashchange
+事件。HashRouter 正是借助这一特性，将路由信息存储在锚点之后，例如
+http://localhost:3000/#/about
+。
+特点
+：
+URL 格式带有
+#
+，视觉上相对“丑陋”；
+兼容性极强，支持所有主流浏览器，包括低版本 IE，因为锚点是早期 HTML 就支持的特性；
+无需后端配置，因为锚点部分不会被发送到服务器",,https://juejin.cn/post/7596241980869279778,2026-01-19 11:42:55
+Next.js第二十二章(国际化),component,"Next.js第二十二章(国际化)
+小满zs
+2026-01-18
+0
+阅读4分钟
+国际化(
+i18n
+)
+国际化(Internationalization)是
+Next.js
+提供的一种机制，用于支持多语言的网站，例如可以实现中英文切换，包括接口同步翻译，以及不同语言所展示的页面不一样等。
+小知识：i18n(
+internationalization
+)的由来是取自开头i和结尾n的中间有18个字母，所以称为i18n，其他的也是类似的例如k8s(
+kubernetes
+)就是取自开头k和结尾s的中间有8个字母，所以称为k8s。
+本章节比较复杂完整源码获取地址
+github.com/XiaoManZS/N…
+,建议下载配合观看
+术语解释
+在学习之前我们需要了解一些术语：
+language: 语言(排名不分先后)
+英语(English) 用
+en
+表示
+中文(Chinese) 用
+zh
+表示(zh取自
+Zhongwen
+的拼音)
+日本语(Japanese) 用
+ja
+表示
+韩国语(Korean) 用
+ko
+表示
+语言速查表:
+zh.wikipedia.org/wiki/ISO_63…
+territory：地区(排名不分先后)
+美国(United States) 用
+US
+表示
+中国(China) 用
+CN
+表示
+日本(Japan) 用
+JP
+表示
+韩国(Korea) 用
+KR
+表示
+地区速查表:
+zh.wikipedia.org/wiki/ISO_31…
+一般我们把语言和地区组合起来，称为
+locale
+，例如
+en-US
+表示英语(美国)，
+zh-CN
+表示中文(中国)。
+实现原理
+Next.js建议我们使用http报文头来判断用户使用的语言
+Accept-Language
+，例如
+Accept-Language: zh-CN,zh;q=0.9,en;q=0.8
+表示用户使用中文(中国)，如果用户没有设置，则使用默认语言。
+Accept-Language规则
+zh-CN,zh;q=0.9,en;q=0.8
+表示用户使用中文(中国)，权重为1(最大值1会被省略)，中文(中国)权重为0.9，英语(美国)权重为0.8。
+安装第三方库
+npm i negotiator
+# 用于解析Accept-Language
+npm i @formatjs/intl-localematch",,https://juejin.cn/post/7596170399881691188,2026-01-19 11:42:57
+React 文本截断组件 rc-text-ellipsis,component,"React 文本截断组件 rc-text-ellipsis
+Sarah
+2026-01-18
+0
+阅读8分钟
+前言
+在前端开发中，文本截断（Text Ellipsis）是一个极其常见的需求。无论是新闻列表、商品描述、用户评论，还是各类卡片组件，我们经常需要在有限的空间内展示较长的文本内容。虽然 CSS 的
+text-overflow: ellipsis
+可以实现单行文本截断，但在面对多行文本、自定义省略位置、展开/收起功能等复杂场景时，纯 CSS 方案就显得力不从心了。
+本文将深入剖析
+rc-text-ellipsis
+组件的设计与实现，这是一个功能强大、高度灵活的 React 文本截断组件，它不仅支持多行文本截断，还提供了三种省略位置（开始、中间、结尾）、展开/收起功能、自定义操作按钮、响应式自动重算等特性。
+github地址：
+github.com/wulala0102/…
+效果预览：
+rc-text-ellipsis.vercel.app
+核心特性一览
+在深入代码实现之前，让我们先了解一下这个组件提供的核心能力：
+🎯
+精确的多行文本截断
+- 支持任意行数的文本截断控制
+📍
+三种省略位置
+- 支持在文本开始、中间、结尾位置进行省略
+🔄
+展开/收起功能
+- 提供完整的状态管理和交互能力
+🎨
+高度可定制
+- 支持自定义操作按钮、省略符号等
+📱
+响应式设计
+- 窗口大小变化时自动重新计算
+🎛️
+命令式 API
+- 通过 ref 提供外部控制能力
+💪
+TypeScript 支持
+- 完整的类型定义
+⚡
+高效算法
+- 采用二分查找算法优化性能
+技术架构设计
+1. 组件结构
+rc-text-ellipsis
+采用了清晰的分层架构：
+src/
+├── TextEllipsis.tsx
+# 主组件，负责渲染和事件处理
+├── hooks/
+│   └── useTextEllipsis.ts
+# 核心 Hook，封装文本截断逻辑
+└── utils.ts
+# 工具函数，实现算法和 DOM 操作
+这种架构设计遵循了单一职责原则，将渲染逻辑、状态管理和计算逻辑清晰分离。
+2. 主组件设计
+主组件
+TextEllipsis.tsx
+采用了
+React.forwardRef
+来暴露命令式 API：
+export
+interface
+TextEllipsisRef
+{
+toggle
+:
+",,https://juejin.cn/post/7596230910212653099,2026-01-19 11:42:59
+鸿蒙应用的“任意门”：Deep Linking 与 App Linking 的相爱相杀,component,"鸿蒙应用的“任意门”：Deep Linking 与 App Linking 的相爱相杀
+SameX
+2026-01-14
+533
+阅读5分钟
+写在前面
+：本文基于 HarmonyOS Next 的摸爬滚打经验总结。技术这东西更新快，如果哪里说得不对，或者你有更骚的操作，欢迎在评论区拍砖交流。转载请注明出处，谢啦。
+做移动端开发，最烦的是什么？是应用像一个个孤岛，互相都不通气。
+用户在微信里点个链接，想跳到你的 App 里看详情，结果要么没反应，要么跳出一堆甚至都没听说过的 App 让你选。这就很尴尬了。为了解决这个问题，鸿蒙系统给咱们提供了两把钥匙：一把叫
+Deep Linking
+，一把叫
+App Linking
+。
+很多兄弟容易搞混，觉得这俩不是一回事吗？确实，目的都是为了“跳转”，但手段和段位可大不一样。今天咱们就来扒一扒这两者的底裤。
+一、 Deep Linking：简单粗暴的“土法炼钢”
+Deep Linking 说白了，就是利用自定义协议（Scheme）来实现跳转。这招在移动开发界属于“老兵”了。
+它是怎么工作的？
+你想让别人通过暗号找到你，你就得先起个暗号。比如你做个地图 App，你可以跟系统喊一嗓子：“以后只要有人喊
+geo://
+开头的，都归我管！”
+这就是
+Deep Linking
+的核心：
+自定义 Scheme
+。
+优点
+：门槛低，随便定义。
+my-super-app://
+，想怎么写怎么写。
+缺点
+：太随意了。万一隔壁老王也定义了
+geo://
+怎么办？这时候系统就懵圈了，只能弹个窗让用户自己选。这一选，用户体验就断档了。而且这玩意儿不安全，谁都能冒充。
+怎么配置？
+在鸿蒙里，你得在
+module.json5
+里通过
+skills
+标签去“抢注”这个暗号。
+// module.json5
+{
+""module""
+:
+{
+""abilities""
+:
+[
+{
+""name""
+:
+""EntryAbility""
+,
+""skills""
+:
+[
+{
+""uris""
+:
+[
+{
+""scheme""
+:
+""mychat""
+,
+// 你的暗号
+""host""
+:
+""talk.com""
+,
+// 具体的接头地点
+""path""
+:
+""room""
+// 具体的房间号
+}
+]
+}
+]
+}
+]
+}
+}
+这一下，只要有链接是
+mychat://talk.com/room
+，系统就会",,https://juejin.cn/post/7594731175405633576,2026-01-19 11:43:02

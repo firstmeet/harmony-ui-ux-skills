@@ -1,0 +1,17 @@
+﻿name,value,category,usage,light_mode,dark_mode,source
+primary,#0A59F7,brand,主要操作按钮、链接、强调元素,#0A59F7,#317AF7,HarmonyOS 设计规范
+primary_light,#5B8FF9,brand,悬浮状态、次要强调,#5B8FF9,#5B8FF9,HarmonyOS 设计规范
+primary_dark,#0041C2,brand,按压状态,#0041C2,#0A59F7,HarmonyOS 设计规范
+secondary,#36D1DC,brand,辅助强调、渐变配色,#36D1DC,#36D1DC,HarmonyOS 设计规范
+accent,#FF6B35,brand,强调色、促销标签,#FF6B35,#FF8A5B,HarmonyOS 设计规范
+success,#64BB5C,semantic,成功状态、完成提示,#64BB5C,#7ACC74,HarmonyOS 设计规范
+warning,#FA9D3B,semantic,警告状态、注意提示,#FA9D3B,#FFB05E,HarmonyOS 设计规范
+error,#E84026,semantic,错误状态、删除操作,#E84026,#F05C44,HarmonyOS 设计规范
+info,#0A59F7,semantic,信息提示、帮助说明,#0A59F7,#317AF7,HarmonyOS 设计规范
+text_primary,#182431,neutral,主要文字、标题,#182431,#E5E8EB,HarmonyOS 设计规范
+text_secondary,#66727A,neutral,次要文字、说明,#66727A,#99A4AE,HarmonyOS 设计规范
+text_tertiary,#99A4AE,neutral,辅助文字、占位符,#99A4AE,#66727A,HarmonyOS 设计规范
+text_disabled,#C5CDD7,neutral,禁用状态文字,#C5CDD7,#454C54,HarmonyOS 设计规范
+bg_primary,#FFFFFF,neutral,主要背景、卡片背景,#FFFFFF,#121212,HarmonyOS 设计规范
+bg_secondary,#F1F3F5,neutral,次要背景、页面背景,#F1F3F5,#1E1E1E,HarmonyOS 设计规范
+border_light,#E5E8EB,neutral,分割线、轻边框,#E5E8EB,#383838,HarmonyOS 设计规范

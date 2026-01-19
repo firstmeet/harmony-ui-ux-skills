@@ -1,0 +1,94 @@
+﻿name,category,description,props,usage_example,source
+Button,basic,按钮组件，用于触发操作或事件,"{""type"": ""ButtonType (Normal, Capsule, Circle)"", ""stateEffect"": ""boolean - 是否开启按压态效果"", ""buttonStyle"": ""ButtonStyleMode - 按钮样式模式""}","Button('确认', { type: ButtonType.Capsule })
+  .width('80%')
+  .height(40)
+  .backgroundColor('#0A59F7')
+  .onClick(() => { })",HarmonyOS ArkUI 官方文档
+Text,basic,文本组件，用于显示文字内容,"{""content"": ""string | Resource - 文本内容"", ""fontSize"": ""number | string - 字体大小"", ""fontColor"": ""ResourceColor - 字体颜色"", ""fontWeight"": ""FontWeight - 字体粗细"", ""textAlign"": ""TextAlign - 文本对齐方式""}","Text('Hello HarmonyOS')
+  .fontSize(16)
+  .fontColor('#182431')
+  .fontWeight(FontWeight.Medium)",HarmonyOS ArkUI 官方文档
+Image,basic,图片组件，用于显示图片资源,"{""src"": ""PixelMap | ResourceStr | DrawableDescriptor"", ""objectFit"": ""ImageFit - 图片填充模式"", ""interpolation"": ""ImageInterpolation - 图片插值""}","Image($r('app.media.icon'))
+  .width(100)
+  .height(100)
+  .objectFit(ImageFit.Cover)
+  .borderRadius(8)",HarmonyOS ArkUI 官方文档
+TextInput,form,单行文本输入框组件,"{""placeholder"": ""ResourceStr - 占位符文本"", ""type"": ""InputType - 输入类型"", ""maxLength"": ""number - 最大输入长度"", ""enterKeyType"": ""EnterKeyType - 回车键类型""}","TextInput({ placeholder: '请输入用户名' })
+  .width('100%')
+  .height(48)
+  .borderRadius(8)
+  .onChange((value) => { })",HarmonyOS ArkUI 官方文档
+Toggle,form,开关组件，用于切换状态,"{""type"": ""ToggleType (Checkbox, Switch, Button)"", ""isOn"": ""boolean - 是否开启"", ""selectedColor"": ""ResourceColor - 选中颜色""}","Toggle({ type: ToggleType.Switch, isOn: true })
+  .selectedColor('#0A59F7')
+  .onChange((isOn) => { })",HarmonyOS ArkUI 官方文档
+Slider,form,滑动条组件，用于数值选择,"{""value"": ""number - 当前值"", ""min"": ""number - 最小值"", ""max"": ""number - 最大值"", ""step"": ""number - 步长"", ""style"": ""SliderStyle - 滑块样式""}","Slider({ value: 50, min: 0, max: 100, step: 1 })
+  .width('100%')
+  .trackColor('#E5E8EB')
+  .selectedColor('#0A59F7')
+  .onChange((value) => { })",HarmonyOS ArkUI 官方文档
+Progress,feedback,进度条组件，用于显示任务进度,"{""value"": ""number - 当前进度值"", ""total"": ""number - 总进度值"", ""type"": ""ProgressType - 进度条类型""}","Progress({ value: 60, total: 100, type: ProgressType.Linear })
+  .width('100%')
+  .color('#0A59F7')",HarmonyOS ArkUI 官方文档
+LoadingProgress,feedback,加载中组件，用于显示加载状态,"{""color"": ""ResourceColor - 加载动画颜色""}","LoadingProgress()
+  .width(48)
+  .height(48)
+  .color('#0A59F7')",HarmonyOS ArkUI 官方文档
+Badge,feedback,徽标组件，用于显示消息数量或状态,"{""count"": ""number - 徽标数字"", ""maxCount"": ""number - 最大显示数字"", ""position"": ""BadgePosition - 徽标位置""}","Badge({ count: 10, maxCount: 99, position: BadgePosition.RightTop }) {
+  Image($r('app.media.message'))
+    .width(48)
+    .height(48)
+}",HarmonyOS ArkUI 官方文档
+Tabs,navigation,页签组件，用于页面切换导航,"{""barPosition"": ""BarPosition - 页签位置"", ""index"": ""number - 当前页签索引"", ""controller"": ""TabsController - 控制器""}","Tabs({ barPosition: BarPosition.Start }) {
+  TabContent() { Text('首页') }.tabBar('首页')
+  TabContent() { Text('我的') }.tabBar('我的')
+}
+.barWidth('100%')
+.barHeight(56)",HarmonyOS ArkUI 官方文档
+Navigation,navigation,导航组件，用于页面路由导航,"{""title"": ""string | CustomBuilder - 标题"", ""mode"": ""NavigationMode - 导航模式"", ""navBarWidth"": ""Length - 导航栏宽度""}","Navigation() {
+  // 页面内容
+}
+.title('页面标题')
+.mode(NavigationMode.Stack)
+.titleMode(NavigationTitleMode.Mini)",HarmonyOS ArkUI 官方文档
+List,layout,列表组件，用于展示列表数据,"{""space"": ""number - 列表项间距"", ""initialIndex"": ""number - 初始索引"", ""scroller"": ""Scroller - 滚动控制器""}","List({ space: 12 }) {
+  ForEach(this.dataList, (item) => {
+    ListItem() {
+      Text(item.title)
+    }
+  })
+}
+.width('100%')
+.divider({ strokeWidth: 0.5, color: '#E5E8EB' })",HarmonyOS ArkUI 官方文档
+Grid,layout,网格组件，用于网格布局展示,"{""columnsTemplate"": ""string - 列模板"", ""rowsTemplate"": ""string - 行模板"", ""columnsGap"": ""Length - 列间距"", ""rowsGap"": ""Length - 行间距""}","Grid() {
+  ForEach(this.items, (item) => {
+    GridItem() {
+      Text(item.name)
+    }
+  })
+}
+.columnsTemplate('1fr 1fr 1fr')
+.columnsGap(12)
+.rowsGap(12)",HarmonyOS ArkUI 官方文档
+Swiper,layout,轮播组件，用于轮播展示内容,"{""index"": ""number - 当前索引"", ""autoPlay"": ""boolean - 自动播放"", ""interval"": ""number - 播放间隔(ms)"", ""indicator"": ""boolean | DotIndicator - 指示器""}","Swiper() {
+  ForEach(this.banners, (item) => {
+    Image(item.imageUrl)
+      .width('100%')
+      .height(200)
+  })
+}
+.autoPlay(true)
+.interval(3000)
+.indicator(true)",HarmonyOS ArkUI 官方文档
+Dialog,feedback,对话框组件，用于重要信息提示或操作确认,"{""title"": ""ResourceStr - 标题"", ""message"": ""ResourceStr - 消息内容"", ""autoCancel"": ""boolean - 点击遮罩是否关闭"", ""alignment"": ""DialogAlignment - 对齐方式""}","AlertDialog.show({
+  title: '提示',
+  message: '确认删除此项？',
+  primaryButton: {
+    value: '取消',
+    action: () => { }
+  },
+  secondaryButton: {
+    value: '确认',
+    fontColor: '#E84026',
+    action: () => { }
+  }
+})",HarmonyOS ArkUI 官方文档

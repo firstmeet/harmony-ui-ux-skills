@@ -1,0 +1,78 @@
+﻿name,type,description,use_case,code_example,source
+Row 水平布局,row,沿水平方向排列子组件,水平排列按钮、图标、文字等,"Row({ space: 12 }) {
+  Image($r('app.media.avatar')).width(40).height(40)
+  Column() {
+    Text('用户名').fontSize(16).fontWeight(FontWeight.Medium)
+    Text('在线').fontSize(12).fontColor('#66727A')
+  }.alignItems(HorizontalAlign.Start)
+}
+.width('100%')
+.justifyContent(FlexAlign.Start)",HarmonyOS ArkUI 布局指南
+Column 垂直布局,column,沿垂直方向排列子组件,垂直排列表单项、列表内容等,"Column({ space: 16 }) {
+  Text('标题').fontSize(20).fontWeight(FontWeight.Bold)
+  Text('描述内容').fontSize(14).fontColor('#66727A')
+  Button('操作按钮').width('100%')
+}
+.width('100%')
+.alignItems(HorizontalAlign.Start)
+.padding(16)",HarmonyOS ArkUI 布局指南
+Flex 弹性布局,flex,弹性布局容器，支持自动换行,标签云、自适应按钮组等,"Flex({ wrap: FlexWrap.Wrap, space: { main: LengthMetrics.vp(8), cross: LengthMetrics.vp(8) } }) {
+  ForEach(this.tags, (tag) => {
+    Text(tag)
+      .fontSize(12)
+      .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+      .backgroundColor('#F1F3F5')
+      .borderRadius(16)
+  })
+}",HarmonyOS ArkUI 布局指南
+Stack 层叠布局,stack,子组件按照层叠关系展示,浮动按钮、图片上的文字标签等,"Stack({ alignContent: Alignment.BottomEnd }) {
+  Image($r('app.media.cover'))
+    .width('100%')
+    .height(200)
+  Text('HOT')
+    .fontSize(12)
+    .fontColor(Color.White)
+    .padding(8)
+    .backgroundColor('#E84026')
+    .borderRadius(4)
+    .margin(12)
+}",HarmonyOS ArkUI 布局指南
+RelativeContainer 相对布局,relative,通过锚点约束进行相对定位,复杂定位场景、卡片内部布局等,"RelativeContainer() {
+  Text('标题')
+    .id('title')
+    .alignRules({
+      top: { anchor: '__container__', align: VerticalAlign.Top },
+      left: { anchor: '__container__', align: HorizontalAlign.Start }
+    })
+  Text('副标题')
+    .alignRules({
+      top: { anchor: 'title', align: VerticalAlign.Bottom },
+      left: { anchor: 'title', align: HorizontalAlign.Start }
+    })
+    .margin({ top: 8 })
+}",HarmonyOS ArkUI 布局指南
+GridRow/GridCol 栅格布局,grid,响应式栅格布局系统,多设备自适应布局、表单排列等,"GridRow({ columns: 12, gutter: 12 }) {
+  GridCol({ span: { sm: 12, md: 6, lg: 4 } }) {
+    // 卡片内容
+  }
+  GridCol({ span: { sm: 12, md: 6, lg: 4 } }) {
+    // 卡片内容
+  }
+}",HarmonyOS ArkUI 布局指南
+WaterFlow 瀑布流布局,waterflow,瀑布流布局，适用于不规则高度的内容展示,图片画廊、商品瀑布流等,"WaterFlow() {
+  ForEach(this.items, (item) => {
+    FlowItem() {
+      Column() {
+        Image(item.imageUrl)
+          .width('100%')
+          .objectFit(ImageFit.Cover)
+        Text(item.title).fontSize(14).padding(8)
+      }
+      .backgroundColor(Color.White)
+      .borderRadius(8)
+    }
+  })
+}
+.columnsTemplate('1fr 1fr')
+.columnsGap(12)
+.rowsGap(12)",HarmonyOS ArkUI 布局指南

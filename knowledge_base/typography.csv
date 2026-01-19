@@ -1,0 +1,13 @@
+﻿name,font_family,font_size,font_weight,line_height,use_case,source
+display_large,HarmonyOS Sans,48fp,Bold (700),1.2,超大展示数字、主数据,HarmonyOS 设计规范
+display_medium,HarmonyOS Sans,32fp,Bold (700),1.2,大标题、展示数据,HarmonyOS 设计规范
+display_small,HarmonyOS Sans,24fp,SemiBold (600),1.3,中等展示标题,HarmonyOS 设计规范
+headline_large,HarmonyOS Sans,20fp,SemiBold (600),1.4,页面标题,HarmonyOS 设计规范
+headline_medium,HarmonyOS Sans,18fp,SemiBold (600),1.4,区块标题,HarmonyOS 设计规范
+headline_small,HarmonyOS Sans,16fp,Medium (500),1.5,小标题、列表标题,HarmonyOS 设计规范
+body_large,HarmonyOS Sans,16fp,Regular (400),1.6,大段正文内容,HarmonyOS 设计规范
+body_medium,HarmonyOS Sans,14fp,Regular (400),1.6,正文内容、描述文字,HarmonyOS 设计规范
+body_small,HarmonyOS Sans,12fp,Regular (400),1.5,辅助说明、时间戳,HarmonyOS 设计规范
+label_large,HarmonyOS Sans,14fp,Medium (500),1.4,按钮文字、标签,HarmonyOS 设计规范
+label_medium,HarmonyOS Sans,12fp,Medium (500),1.4,小标签、徽标,HarmonyOS 设计规范
+label_small,HarmonyOS Sans,10fp,Medium (500),1.3,极小标签、注释,HarmonyOS 设计规范

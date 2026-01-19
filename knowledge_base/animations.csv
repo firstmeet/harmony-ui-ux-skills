@@ -1,0 +1,13 @@
+﻿name,duration,easing,description,use_case,source
+duration_instant,0ms,-,无动画,即时反馈,HarmonyOS 动效规范
+duration_fastest,100ms,Curve.EaseOut,超快动画,微交互、涟漪效果,HarmonyOS 动效规范
+duration_fast,150ms,Curve.EaseInOut,快速动画,按钮反馈、开关切换,HarmonyOS 动效规范
+duration_normal,200ms,Curve.EaseInOut,标准动画,普通过渡、淡入淡出,HarmonyOS 动效规范
+duration_medium,300ms,Curve.FastOutSlowIn,中等动画,弹窗进入、抽屉展开,HarmonyOS 动效规范
+duration_slow,400ms,Curve.FastOutSlowIn,慢速动画,页面切换,HarmonyOS 动效规范
+duration_slower,500ms,Curve.Smooth,较慢动画,复杂动画编排,HarmonyOS 动效规范
+easing_standard,-,Curve.EaseInOut,标准缓动,通用动画,HarmonyOS 动效规范
+easing_decelerate,-,Curve.EaseOut,减速缓动,进入动画,HarmonyOS 动效规范
+easing_accelerate,-,Curve.EaseIn,加速缓动,退出动画,HarmonyOS 动效规范
+easing_emphasized,-,Curve.FastOutSlowIn,强调缓动,重点关注的动画,HarmonyOS 动效规范
+easing_spring,-,Curve.Smooth,弹簧缓动,弹性效果,HarmonyOS 动效规范

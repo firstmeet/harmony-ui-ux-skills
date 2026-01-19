@@ -1,0 +1,15 @@
+﻿name,value,use_case,source
+space_xxs,2vp,极小间距，如图标与文字紧密排列,HarmonyOS 设计规范
+space_xs,4vp,微小间距，紧凑元素间隔,HarmonyOS 设计规范
+space_sm,8vp,小间距，相关元素分组,HarmonyOS 设计规范
+space_md,12vp,中间距，列表项间隔,HarmonyOS 设计规范
+space_lg,16vp,大间距，卡片内边距、区块间隔,HarmonyOS 设计规范
+space_xl,20vp,较大间距，区域分隔,HarmonyOS 设计规范
+space_xxl,24vp,超大间距，模块分隔,HarmonyOS 设计规范
+space_xxxl,32vp,巨大间距，页面边距,HarmonyOS 设计规范
+radius_xs,4vp,小圆角，标签、徽标,HarmonyOS 设计规范
+radius_sm,8vp,标准圆角，按钮、输入框,HarmonyOS 设计规范
+radius_md,12vp,中圆角，卡片,HarmonyOS 设计规范
+radius_lg,16vp,大圆角，模态框,HarmonyOS 设计规范
+radius_xl,24vp,超大圆角，底部弹窗,HarmonyOS 设计规范
+radius_full,9999vp,胶囊形，胶囊按钮、头像,HarmonyOS 设计规范
