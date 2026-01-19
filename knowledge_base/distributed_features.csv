@@ -1,0 +1,10 @@
+feature_name,description,key_apis,implementation_sample,use_case
+应用接续,视频播放时可以从一台设备迁移到另一台设备继续运行,ContinuationManager,基于应用接续实现分布式视频播放器功能,视频观看设备切换
+分布式数据对象,实现跨设备的数据传输,distributedDataObject,基于应用接续及跨设备互通功能实现内容发布功能,跨设备数据同步
+分布式文件系统,跨设备文件访问,distributedFile,配合应用接续实现文件跨设备访问,文件共享
+跨设备互通,跨设备获取图片拖拽图片文字复制粘贴,crossDeviceInteraction,基于应用接续及跨设备互通功能实现内容发布功能,内容跨设备交互
+一多分栏控件,多场景下分栏控件的响应式变化效果,SideBarContainer和Navigation,一次开发多端部署-分栏控件,平板自适应布局
+隔空传送,一抓一放实现跨端传输分享文件和链接,harmonyShare.on('gesturesShare'),基于Share Kit实现隔空传送分享文件和链接,快速跨设备分享
+碰一碰分享,碰一碰完成跨设备文件分享流程,harmonyShare.on('knockShare'),基于Share Kit实现碰一碰文件分享,文件快传
+折叠屏悬停态,折叠屏半折后立在桌面上的使用场景,"FolderStack,FoldSplitContainer",实现折叠屏悬停态,视频通话视频播放
+自由流转,应用在不同设备间无缝切换和数据同步,ContinuationManager和distributedDataObject,应用接续系列示例,多设备协同

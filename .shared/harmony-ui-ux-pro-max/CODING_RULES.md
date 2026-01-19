@@ -383,15 +383,1284 @@ struct WrongExample {
 
 ---
 
+## Rule 5: No Emoji in Code
+
+### Requirements
+
+- **MUST NOT** use emoji characters in code, comments, or string resources
+- **MUST** use text descriptions or icon resources instead
+- Emoji can cause encoding issues and are not professional in production code
+
+### Examples
+
+```typescript
+// CORRECT - Using icon resources
+Image($r('sys.symbol.heart'))
+  .width(24)
+  .height(24)
+
+Text($r('app.string.feeding_label'))  // "喂养" in string.json
+
+// CORRECT - Using descriptive comments
+// Feeding module - handles breast milk and bottle feeding
+
+// WRONG - Using emoji in code (FORBIDDEN!)
+Text('🍼 喂养')           // Emoji in string
+// 🍼 喂养模块            // Emoji in comment
+
+// WRONG - Emoji in variable names or identifiers
+let feeding🍼Count = 0    // FORBIDDEN
+```
+
+---
+
+## Rule 6: Icon Usage - Check Before Use
+
+### Requirements
+
+使用图标时必须遵循以下流程：
+
+1. **先检查原生图标是否存在**
+2. **存在则使用原生图标**
+3. **不存在则从 allsvgicons.com 获取 SVG 并保存到本地**
+
+### Step 1: 检查原生图标是否存在
+
+**方法一：查询官方文档**
+- 访问 [HarmonyOS Symbol 图标文档](https://developer.huawei.com/consumer/cn/doc/harmonyos-references-V5/ts-components-general-symbol-glyph-V5)
+- 搜索需要的图标名称
+
+**方法二：使用 DevEco Studio**
+- 在代码中输入 `$r('sys.symbol.` 
+- IDE 会自动提示可用的图标列表
+- 如果没有提示或编译报错，说明图标不存在
+
+**方法三：查询知识库**
+- 参考 `knowledge_base/harmony_symbols.csv` 中的完整官方图标列表 (404个唯一图标)
+- 官方页面显示433个图标符号，包含重复条目（同一图标可能属于多个类别）
+- 包含 15 个分类: 系统UI/时间/箭头/相机与照片/办公文件/键盘/媒体/通信/连接/符号标识/编辑/隐私安全/人物/形状/交通出行
+
+### Step 2: 使用原生图标（如果存在）
+
+```typescript
+// 方式一：使用 Image 组件
+Image($r('sys.symbol.heart'))
+  .width(24)
+  .height(24)
+  .fontColor($r('app.color.icon_primary'))
+
+// 方式二：使用 SymbolGlyph 组件（支持动画）
+SymbolGlyph($r('sys.symbol.heart'))
+  .fontSize(24)
+  .fontColor([$r('app.color.primary')])
+```
+
+### Step 3: 获取替代图标（如果原生不存在）
+
+**从 allsvgicons.com 获取：**
+
+1. 访问 https://allsvgicons.com/
+2. 搜索需要的图标（如 "cart", "wallet", "coupon"）
+3. 推荐图标库（风格统一、质量高）：
+   - **Material Symbols** (15009 icons) - Google 风格
+   - **Phosphor** (9072 icons) - 简洁现代
+   - **Tabler Icons** (5963 icons) - 线条风格
+   - **Lucide** (1641 icons) - Feather 改进版
+   - **HeroIcons** (1288 icons) - Tailwind 风格
+4. 选择 SVG 格式下载
+
+### Step 4: 保存 SVG 到项目
+
+**文件位置：** `entry/src/main/resources/base/media/`
+
+**命名规范：** `ic_功能名.svg`
+
+```
+resources/base/media/
+├── ic_cart.svg          # 购物车
+├── ic_wallet.svg        # 钱包
+├── ic_coupon.svg        # 优惠券
+├── ic_customer_service.svg  # 客服
+└── ic_points.svg        # 积分
+```
+
+### Step 5: 在代码中使用自定义图标
+
+```typescript
+// 使用本地 SVG 图标
+Image($r('app.media.ic_cart'))
+  .width(24)
+  .height(24)
+  .fillColor($r('app.color.icon_primary'))  // 支持动态染色
+
+// 封装为可复用组件
+@Component
+struct AppIcon {
+  @Prop name: string = ''
+  @Prop size: number = 24
+  @Prop color: ResourceColor = $r('app.color.icon_primary')
+
+  build() {
+    Image($r(`app.media.${this.name}`))
+      .width(this.size)
+      .height(this.size)
+      .fillColor(this.color)
+  }
+}
+
+// 使用
+AppIcon({ name: 'ic_cart', size: 24 })
+```
+
+### 常用原生图标速查
+
+| 功能 | 图标名称 | 用法 |
+|------|----------|------|
+| 首页 | `sys.symbol.house` | 底部导航 |
+| 返回 | `sys.symbol.chevron_left` | 导航栏 |
+| 搜索 | `sys.symbol.magnifyingglass` | 搜索框 |
+| 设置 | `sys.symbol.gearshape` | 设置入口 |
+| 用户 | `sys.symbol.person` | 个人中心 |
+| 添加 | `sys.symbol.plus` | 新建/添加 |
+| 删除 | `sys.symbol.trash` | 删除操作 |
+| 编辑 | `sys.symbol.pencil` | 编辑操作 |
+| 分享 | `sys.symbol.square_and_arrow_up` | 分享功能 |
+| 收藏 | `sys.symbol.heart` | 收藏/喜欢 |
+| 通知 | `sys.symbol.bell` | 消息通知 |
+| 更多 | `sys.symbol.ellipsis` | 更多菜单 |
+| 关闭 | `sys.symbol.xmark` | 关闭按钮 |
+| 确认 | `sys.symbol.checkmark` | 确认/完成 |
+| 刷新 | `sys.symbol.arrow_clockwise` | 刷新操作 |
+
+### 需要自定义的常见图标
+
+以下图标原生不存在，需要从 allsvgicons.com 获取：
+
+| 功能 | 推荐搜索词 | 推荐图标库 |
+|------|-----------|-----------|
+| 购物车 | cart, shopping-cart | Material Symbols |
+| 钱包 | wallet | Phosphor |
+| 优惠券 | coupon, ticket | Tabler Icons |
+| 客服 | headset, support | Lucide |
+| 积分 | coin, points | Material Symbols |
+| 会员 | crown, vip | Phosphor |
+| 签到 | calendar-check | Tabler Icons |
+| 物流 | truck, delivery | HeroIcons |
+| 评价 | star-half, rating | Material Symbols |
+| 订单 | receipt, order | Lucide |
+
+---
+
+## Rule 7: Design Principles - UI/UX Standards
+
+### 7.1 一多架构 (Multi-device Responsive)
+
+**默认必须考虑响应式设计**，适配手机、折叠屏、平板等多种设备。
+
+**必须使用的布局方案：**
+
+```typescript
+// ✅ 方案一：GridRow/GridCol 栅格布局（推荐）
+GridRow({ columns: 12 }) {
+  GridCol({ span: { xs: 12, sm: 6, md: 4, lg: 3 } }) {
+    // 卡片内容 - 自适应列数
+  }
+}
+
+// ✅ 方案二：breakpoints 断点适配
+@State currentBreakpoint: string = 'sm'
+
+build() {
+  GridRow({
+    breakpoints: {
+      value: ['320vp', '520vp', '840vp'],  // sm, md, lg
+      reference: BreakpointsReference.WindowSize
+    }
+  }) {
+    // 根据 currentBreakpoint 调整布局
+  }
+  .onBreakpointChange((breakpoint: string) => {
+    this.currentBreakpoint = breakpoint
+  })
+}
+
+// ✅ 方案三：layoutWeight 弹性布局
+Row() {
+  Column() { /* 固定宽度侧边栏 */ }
+    .width(200)
+  
+  Column() { /* 自适应内容区 */ }
+    .layoutWeight(1)  // 占据剩余空间
+}
+
+// ✅ 方案四：百分比 + 最大宽度
+Column() {
+  // 内容
+}
+.width('100%')
+.constraintSize({ maxWidth: 600 })  // 大屏居中限宽
+```
+
+### 7.2 视觉风格 (Visual Design)
+
+遵循 **"高端、简约、富有生命力"** 的设计理念。
+
+**分层设计（层级感）：**
+```typescript
+// 背景层 → 内容层 → 浮层
+Stack() {
+  // Layer 1: 背景
+  Column()
+    .backgroundColor($r('app.color.bg_secondary'))
+  
+  // Layer 2: 卡片内容
+  Column()
+    .backgroundColor($r('app.color.bg_primary'))
+    .shadow({
+      radius: 16,
+      color: 'rgba(0, 0, 0, 0.08)',
+      offsetY: 4
+    })
+  
+  // Layer 3: 悬浮按钮
+  Button()
+    .shadow({
+      radius: 24,
+      color: 'rgba(10, 89, 247, 0.3)',
+      offsetY: 8
+    })
+}
+```
+
+**圆角规范：**
+```typescript
+// 标准圆角值
+.borderRadius(8)   // 小组件：按钮、输入框、小卡片
+.borderRadius(12)  // 中等组件：列表项、普通卡片
+.borderRadius(16)  // 大组件：弹窗、大卡片
+.borderRadius(24)  // 特大组件：底部弹出层、全屏卡片
+
+// 使用资源引用（推荐）
+.borderRadius($r('app.float.radius_xs'))  // 4vp
+.borderRadius($r('app.float.radius_sm'))  // 8vp
+.borderRadius($r('app.float.radius_md'))  // 12vp
+.borderRadius($r('app.float.radius_lg'))  // 16vp
+.borderRadius($r('app.float.radius_xl'))  // 24vp
+```
+
+**留白规范：**
+```typescript
+// 适当的间距让界面呼吸
+.padding({
+  top: 16,
+  right: 16,
+  bottom: 16,
+  left: 16
+})
+
+// 组件间距
+Column({ space: 12 }) { }  // 紧凑
+Column({ space: 16 }) { }  // 标准
+Column({ space: 24 }) { }  // 宽松
+```
+
+### 7.3 交互逻辑 (Motion Design)
+
+**动效必须自然流畅**，使用系统推荐的动画曲线。
+
+```typescript
+// ✅ 推荐动画方式一：animateTo（状态驱动）
+@State isExpanded: boolean = false
+
+build() {
+  Column()
+    .height(this.isExpanded ? 200 : 80)
+    .onClick(() => {
+      animateTo({
+        duration: 300,
+        curve: Curve.Friction,  // 摩擦曲线 - 自然减速
+        onFinish: () => { }
+      }, () => {
+        this.isExpanded = !this.isExpanded
+      })
+    })
+}
+
+// ✅ 推荐动画方式二：animation 属性动画
+Column()
+  .scale({ x: this.isPressed ? 0.95 : 1.0, y: this.isPressed ? 0.95 : 1.0 })
+  .animation({
+    duration: 150,
+    curve: Curve.Sharp  // 锐利曲线 - 快速响应
+  })
+
+// ✅ 推荐动画方式三：transition 转场动画
+if (this.showPanel) {
+  Column()
+    .transition(TransitionEffect.OPACITY
+      .combine(TransitionEffect.translate({ y: 100 }))
+      .animation({ duration: 300, curve: Curve.Friction }))
+}
+
+// ✅ SharedTransition 共享元素动画
+Image($r('app.media.cover'))
+  .sharedTransition('cover_' + this.id, {
+    duration: 300,
+    curve: Curve.Friction,
+    type: SharedTransitionEffectType.Exchange
+  })
+```
+
+**推荐动画曲线：**
+| 曲线 | 用途 | 特点 |
+|------|------|------|
+| `Curve.Friction` | 页面转场、展开收起 | 自然减速，物理感强 |
+| `Curve.Sharp` | 按钮反馈、快速交互 | 快速响应，干脆利落 |
+| `Curve.Smooth` | 滚动惯性、平滑过渡 | 平滑连续 |
+| `Curve.EaseOut` | 进入动画 | 快进慢出 |
+| `Curve.EaseIn` | 退出动画 | 慢进快出 |
+
+---
+
+## Rule 8: Code Best Practices - Anti-Patterns
+
+### 8.1 禁止使用 px 单位
+
+**必须使用 vp（视觉像素）或 fp（字体像素）**
+
+```typescript
+// ✅ CORRECT - 使用 vp/fp
+Text('标题')
+  .fontSize(18)      // 默认单位是 fp
+  .width(100)        // 默认单位是 vp
+  .height('100%')    // 百分比
+
+Column()
+  .padding(16)       // 16vp
+  .margin({ top: 8 }) // 8vp
+
+// ❌ WRONG - 使用 px（禁止！）
+Text('标题')
+  .fontSize('18px')  // 禁止
+  .width('100px')    // 禁止
+```
+
+### 8.2 禁止在 build() 中进行复杂逻辑
+
+**build() 方法应保持纯净，只负责 UI 声明**
+
+```typescript
+// ❌ WRONG - build() 中做复杂运算
+build() {
+  Column() {
+    // 禁止：在 build 中进行数据处理
+    let filteredItems = this.items.filter(item => item.price > 100)
+    let sortedItems = filteredItems.sort((a, b) => b.price - a.price)
+    
+    ForEach(sortedItems, (item: Item) => { })
+  }
+}
+
+// ✅ CORRECT - 使用计算属性或提前处理
+@State items: Array<Item> = []
+
+// 方式一：使用 getter 计算属性
+get filteredItems(): Array<Item> {
+  return this.items
+    .filter(item => item.price > 100)
+    .sort((a, b) => b.price - a.price)
+}
+
+build() {
+  Column() {
+    ForEach(this.filteredItems, (item: Item) => { })
+  }
+}
+
+// 方式二：在数据更新时处理
+updateItems(newItems: Array<Item>) {
+  this.items = newItems
+    .filter(item => item.price > 100)
+    .sort((a, b) => b.price - a.price)
+}
+```
+
+### 8.3 推荐使用 AttributeModifier 抽离样式
+
+**提高样式复用性和可维护性**
+
+```typescript
+// 定义样式修改器
+class PrimaryButtonModifier implements AttributeModifier<ButtonAttribute> {
+  applyNormalAttribute(instance: ButtonAttribute): void {
+    instance
+      .backgroundColor($r('app.color.primary'))
+      .fontColor($r('app.color.text_inverse'))
+      .fontSize(16)
+      .height(44)
+      .borderRadius(8)
+  }
+}
+
+class SecondaryButtonModifier implements AttributeModifier<ButtonAttribute> {
+  applyNormalAttribute(instance: ButtonAttribute): void {
+    instance
+      .backgroundColor($r('app.color.bg_secondary'))
+      .fontColor($r('app.color.text_primary'))
+      .fontSize(16)
+      .height(44)
+      .borderRadius(8)
+      .border({ width: 1, color: $r('app.color.border_light') })
+  }
+}
+
+// 使用
+@Entry
+@Component
+struct ButtonDemo {
+  primaryStyle: PrimaryButtonModifier = new PrimaryButtonModifier()
+  secondaryStyle: SecondaryButtonModifier = new SecondaryButtonModifier()
+
+  build() {
+    Column({ space: 16 }) {
+      Button('主要按钮')
+        .attributeModifier(this.primaryStyle)
+      
+      Button('次要按钮')
+        .attributeModifier(this.secondaryStyle)
+    }
+  }
+}
+```
+
+### 8.4 推荐使用 Navigation 组件
+
+**使用 Navigation 而非旧版 Router API**
+
+```typescript
+// ✅ CORRECT - 使用 Navigation 组件
+@Entry
+@Component
+struct MainPage {
+  @Provide('navStack') navStack: NavPathStack = new NavPathStack()
+
+  build() {
+    Navigation(this.navStack) {
+      // 首页内容
+      HomePage()
+    }
+    .navDestination(this.pageBuilder)
+    .mode(NavigationMode.Stack)
+  }
+
+  @Builder
+  pageBuilder(name: string, param: object) {
+    if (name === 'detail') {
+      DetailPage({ data: param as DetailData })
+    } else if (name === 'settings') {
+      SettingsPage()
+    }
+  }
+}
+
+// 子页面导航
+@Component
+struct HomePage {
+  @Consume('navStack') navStack: NavPathStack
+
+  build() {
+    Column() {
+      Button('查看详情')
+        .onClick(() => {
+          this.navStack.pushPathByName('detail', { id: 123 })
+        })
+    }
+  }
+}
+
+// ❌ AVOID - 旧版 Router API
+import router from '@ohos.router'
+router.pushUrl({ url: 'pages/Detail' })  // 不推荐
+```
+
+---
+
+## Rule 9: Development Workflow
+
+### 开发功能时的思考路径
+
+当收到功能开发需求时，按以下步骤执行：
+
+### Step 1: 分析场景 - 多设备适配
+
+```
+思考问题：
+├── 手机端如何显示？（竖屏为主）
+├── 折叠屏如何显示？（展开/折叠两种状态）
+├── 平板端如何显示？（横屏/多列布局）
+└── 是否需要响应式断点？
+```
+
+```typescript
+// 示例：商品列表适配
+GridRow({ columns: 12 }) {
+  ForEach(this.products, (product: Product) => {
+    GridCol({
+      span: {
+        xs: 6,   // 手机：2列
+        sm: 4,   // 折叠屏：3列
+        md: 3,   // 平板：4列
+        lg: 2    // 大屏：6列
+      }
+    }) {
+      ProductCard({ product: product })
+    }
+  })
+}
+```
+
+### Step 2: 定义数据 - Model 层优先
+
+```typescript
+// 先定义数据模型
+interface Product {
+  id: string
+  name: string
+  price: number
+  imageUrl: string
+  stock: number
+}
+
+// 定义页面状态
+@Entry
+@Component
+struct ProductListPage {
+  @State products: Array<Product> = []
+  @State isLoading: boolean = true
+  @State currentPage: number = 1
+  @State hasMore: boolean = true
+  
+  // 业务逻辑
+  async loadProducts() {
+    this.isLoading = true
+    const result = await ProductService.getList(this.currentPage)
+    this.products = result.data
+    this.hasMore = result.hasMore
+    this.isLoading = false
+  }
+}
+```
+
+### Step 3: 构建 UI - 组件化设计
+
+```typescript
+build() {
+  Column() {
+    // 1. 顶部搜索栏
+    SearchBar({ onSearch: this.handleSearch })
+    
+    // 2. 内容区域
+    if (this.isLoading) {
+      LoadingView()
+    } else if (this.products.length === 0) {
+      EmptyView({ message: $r('app.string.no_products') })
+    } else {
+      // 商品列表
+      List() {
+        ForEach(this.products, (product: Product) => {
+          ListItem() {
+            ProductCard({ product: product })
+          }
+        })
+      }
+      .onReachEnd(() => this.loadMore())
+    }
+  }
+}
+```
+
+### Step 4: 注入动效 - 提升体验
+
+```typescript
+// 页面进入动画
+pageTransition() {
+  PageTransitionEnter({ duration: 300, curve: Curve.Friction })
+    .opacity(0)
+    .translate({ y: 50 })
+  PageTransitionExit({ duration: 200, curve: Curve.Sharp })
+    .opacity(0)
+}
+
+// 列表项动画
+@Component
+struct ProductCard {
+  @State isPressed: boolean = false
+  @Prop product: Product
+  
+  build() {
+    Column() {
+      // 卡片内容
+    }
+    .scale({ x: this.isPressed ? 0.98 : 1.0, y: this.isPressed ? 0.98 : 1.0 })
+    .animation({ duration: 100, curve: Curve.Sharp })
+    .onTouch((event: TouchEvent) => {
+      if (event.type === TouchType.Down) {
+        this.isPressed = true
+      } else if (event.type === TouchType.Up || event.type === TouchType.Cancel) {
+        this.isPressed = false
+      }
+    })
+  }
+}
+
+// SharedTransition 详情页
+Image($r('app.media.product_image'))
+  .sharedTransition('product_' + this.product.id, {
+    duration: 300,
+    curve: Curve.Friction
+  })
+```
+
+---
+
+## Rule 10: Project Creation - 项目创建规则
+
+### 触发条件
+
+当用户请求创建新项目时，必须使用初始化脚本：
+
+**触发关键词:**
+- "创建xxx项目"、"新建xxx项目"、"初始化xxx项目"
+- "Create xxx project"、"Initialize xxx project"
+
+### 执行流程
+
+```
+步骤1: 询问 SDK 版本 (如果用户未提供)
+       提示: "请提供 SDK 版本，格式如 6.0.2(22)"
+       
+步骤2: 确认项目信息
+       - 项目名称 (从用户请求提取)
+       - SDK 版本 (用户提供)
+       - 目标路径 (默认当前目录)
+       
+步骤3: 执行初始化脚本
+       python scripts/init_harmony_project.py <项目名> --sdk "<版本>"
+       
+步骤4: 验证编译
+       cd <项目路径>
+       hvigorw assembleHap --no-daemon
+       
+步骤5: 报告结果
+       - 成功: 告知用户项目已创建
+       - 失败: 分析错误并修复
+```
+
+### 脚本命令
+
+```bash
+# 基础用法 (SDK 版本必填)
+python scripts/init_harmony_project.py MyApp --sdk "6.0.2(22)"
+
+# 指定目标目录
+python scripts/init_harmony_project.py MyApp --sdk "6.0.2(22)" --path E:/projects
+
+# 自定义包名前缀
+python scripts/init_harmony_project.py MyApp --sdk "6.0.2(22)" --bundle com.mycompany
+```
+
+### SDK 版本格式
+
+- 格式: `主版本.次版本.修订版(API版本)`
+- 示例: `6.0.2(22)`, `5.0.0(12)`
+- 查看方式: DevEco Studio 项目的 `build-profile.json5` 中的 `compatibleSdkVersion`
+
+### 脚本生成内容
+
+| 类别 | 文件 |
+|------|------|
+| **配置文件** | oh-package.json5, build-profile.json5, hvigorfile.ts |
+| **模块配置** | entry/module.json5, entry/build-profile.json5 |
+| **资源文件** | color.json, string.json, float.json (含深色模式) |
+| **媒体资源** | layered_image.json, foreground.png, background.png, startIcon.png |
+| **示例代码** | EntryAbility.ets, Index.ets, HomePage.ets, ProfilePage.ets |
+
+### 示例对话
+
+```
+用户: 创建一个母婴健康管理项目
+
+AI: 好的，我来创建母婴健康管理项目。请问您的 SDK 版本是多少？
+    格式如 "6.0.2(22)"，可在 DevEco Studio 的 build-profile.json5 中查看。
+
+用户: 6.0.2(22)
+
+AI: 收到，正在创建项目...
+    python scripts/init_harmony_project.py BabyHealth --sdk "6.0.2(22)"
+    
+    项目创建成功！正在验证编译...
+    hvigorw assembleHap --no-daemon
+    
+    ✓ ArkTS 编译通过
+    项目已创建: ./BabyHealth
+```
+
+---
+
+## Rule 11: Resource Integrity - 资源完整性要求
+
+### 核心原则
+
+**当生成使用 `$r()` 的代码时，必须同时输出对应的资源文件定义。**
+
+### 同步输出要求
+
+```
+生成 UI 代码时，必须同时提供:
+1. string.json 片段 - 所有 $r('app.string.xxx') 引用的字符串
+2. color.json 片段 - 所有 $r('app.color.xxx') 引用的颜色
+3. float.json 片段 - 所有 $r('app.float.xxx') 引用的尺寸（如果有新增）
+```
+
+### 资源命名规范
+
+资源 Key 必须遵循 **模块名_功能名_属性名** 格式：
+
+```
+模块名_功能名_属性名
+
+示例:
+- login_button_text          → "登录"
+- login_button_bg_color      → "#0A59F7"
+- login_input_placeholder    → "请输入用户名"
+- cart_badge_count           → 购物车数量
+- profile_avatar_size        → 头像尺寸
+```
+
+### 输出格式示例
+
+当生成登录页面代码时，必须同时输出：
+
+**代码文件 (Login.ets):**
+```typescript
+@Entry
+@Component
+struct LoginPage {
+  build() {
+    Column() {
+      Text($r('app.string.login_title'))
+        .fontColor($r('app.color.login_title_color'))
+      
+      Button($r('app.string.login_button_text'))
+        .backgroundColor($r('app.color.login_button_bg'))
+    }
+  }
+}
+```
+
+**资源文件片段 (string.json):**
+```json
+{
+  "string": [
+    { "name": "login_title", "value": "欢迎登录" },
+    { "name": "login_button_text", "value": "登录" }
+  ]
+}
+```
+
+**资源文件片段 (color.json):**
+```json
+{
+  "color": [
+    { "name": "login_title_color", "value": "#182431" },
+    { "name": "login_button_bg", "value": "#0A59F7" }
+  ]
+}
+```
+
+---
+
+## Rule 12: Layout Strategy Selector - 布局策略选择器
+
+### 决策表
+
+根据 UI 类型和屏幕宽度选择合适的布局策略：
+
+| 场景 | 策略 | 实现方式 | 触发条件 |
+|------|------|----------|----------|
+| **基础组件** | 自适应伸缩 | `layoutWeight(1)` 或百分比 | 所有屏幕 |
+| **列表/宫格** | 延伸布局 | `Grid` + `breakpoints` | 列数随宽度增加 |
+| **侧边导航** | 分栏布局 | `SideBarContainer` / `Navigation` | `windowWidth > 600vp` |
+| **详情页** | 主次分栏 | 左侧列表 + 右侧详情 | `windowWidth > 840vp` |
+
+### 策略一：自适应伸缩
+
+适用于：按钮组、输入框、卡片内元素
+
+```typescript
+Row() {
+  Button($r('app.string.cancel'))
+    .layoutWeight(1)
+  
+  Button($r('app.string.confirm'))
+    .layoutWeight(1)
+}
+.width('100%')
+```
+
+### 策略二：延伸布局 (Grid + Breakpoints)
+
+适用于：商品列表、图片宫格、功能入口
+
+```typescript
+GridRow({
+  columns: 12,
+  breakpoints: {
+    value: ['320vp', '520vp', '840vp'],
+    reference: BreakpointsReference.WindowSize
+  }
+}) {
+  ForEach(this.items, (item: ItemData) => {
+    GridCol({
+      span: { xs: 6, sm: 4, md: 3, lg: 2 }  // 2/3/4/6 列
+    }) {
+      ItemCard({ item: item })
+    }
+  })
+}
+```
+
+### 策略三：分栏布局
+
+适用于：设置页、邮件应用、文件管理
+
+```typescript
+// 当 windowWidth > 600vp 时启用分栏
+@State isWideScreen: boolean = false
+
+build() {
+  if (this.isWideScreen) {
+    SideBarContainer(SideBarContainerType.Embed) {
+      // 侧边栏
+      MenuList()
+      // 内容区
+      ContentArea()
+    }
+    .sideBarWidth(200)
+  } else {
+    Navigation(this.navStack) {
+      MenuList()
+    }
+  }
+}
+
+aboutToAppear() {
+  // 监听窗口变化
+  window.getLastWindow(getContext(this)).then((win) => {
+    const windowWidth = win.getWindowProperties().windowRect.width
+    this.isWideScreen = px2vp(windowWidth) > 600
+  })
+}
+```
+
+### 策略四：主次分栏 (Master-Detail)
+
+适用于：平板端邮件、笔记应用
+
+```typescript
+Navigation(this.navStack) {
+  // 列表区域
+  List() {
+    ForEach(this.dataList, (item: DataItem) => {
+      ListItem() {
+        ItemRow({ item: item })
+      }
+      .onClick(() => this.selectItem(item))
+    })
+  }
+}
+.mode(NavigationMode.Split)  // 分栏模式
+.navBarWidth('40%')          // 导航栏宽度
+.minContentWidth(360)        // 内容区最小宽度
+```
+
+---
+
+## Rule 13: Performance Constraints - 性能准则
+
+### 13.1 减少嵌套层级
+
+**优先使用 `RelativeContainer` 替代多层嵌套的 Column/Row**
+
+```typescript
+// ❌ 错误：过度嵌套
+Column() {
+  Row() {
+    Column() {
+      Row() {
+        Text('内容')
+      }
+    }
+  }
+}
+
+// ✅ 正确：使用 RelativeContainer 扁平化
+RelativeContainer() {
+  Text('标题')
+    .id('title')
+    .alignRules({
+      top: { anchor: '__container__', align: VerticalAlign.Top },
+      left: { anchor: '__container__', align: HorizontalAlign.Start }
+    })
+  
+  Text('内容')
+    .id('content')
+    .alignRules({
+      top: { anchor: 'title', align: VerticalAlign.Bottom },
+      left: { anchor: '__container__', align: HorizontalAlign.Start }
+    })
+}
+```
+
+### 13.2 长列表优化
+
+**数据量 > 50 时必须使用 LazyForEach + keyGenerator**
+
+```typescript
+// ❌ 错误：大数据量使用 ForEach
+List() {
+  ForEach(this.bigDataList, (item: DataItem) => {  // 危险！
+    ListItem() { ... }
+  })
+}
+
+// ✅ 正确：使用 LazyForEach + IDataSource
+class MyDataSource implements IDataSource {
+  private dataArray: DataItem[] = []
+  
+  totalCount(): number {
+    return this.dataArray.length
+  }
+  
+  getData(index: number): DataItem {
+    return this.dataArray[index]
+  }
+  
+  // ... 其他必需方法
+}
+
+@State dataSource: MyDataSource = new MyDataSource()
+
+List() {
+  LazyForEach(this.dataSource, (item: DataItem, index: number) => {
+    ListItem() {
+      ItemComponent({ item: item })
+    }
+  }, (item: DataItem) => item.id.toString())  // keyGenerator 必填
+}
+```
+
+### 13.3 状态隔离
+
+**频繁变动的状态必须拆分为子组件，避免整个父组件重渲染**
+
+```typescript
+// ❌ 错误：计时器状态导致整个页面刷新
+@Entry
+@Component
+struct BadPage {
+  @State seconds: number = 0  // 每秒更新，整个页面刷新
+  
+  build() {
+    Column() {
+      Header()           // 被迫刷新
+      Text(`${this.seconds}s`)
+      HeavyContent()     // 被迫刷新
+      Footer()           // 被迫刷新
+    }
+  }
+}
+
+// ✅ 正确：将计时器拆分为独立子组件
+@Component
+struct TimerDisplay {
+  @State seconds: number = 0  // 只影响此组件
+  
+  build() {
+    Text(`${this.seconds}s`)
+  }
+}
+
+@Entry
+@Component
+struct GoodPage {
+  build() {
+    Column() {
+      Header()           // 不受影响
+      TimerDisplay()     // 独立更新
+      HeavyContent()     // 不受影响
+      Footer()           // 不受影响
+    }
+  }
+}
+```
+
+### 13.4 避免 build() 中的计算
+
+```typescript
+// ❌ 错误：build() 中计算
+build() {
+  Column() {
+    ForEach(this.items.filter(i => i.active).sort((a, b) => a.order - b.order), ...)
+  }
+}
+
+// ✅ 正确：使用 getter 或提前计算
+get filteredItems(): ItemData[] {
+  return this.items.filter(i => i.active).sort((a, b) => a.order - b.order)
+}
+
+build() {
+  Column() {
+    ForEach(this.filteredItems, ...)
+  }
+}
+```
+
+---
+
+## Rule 14: Auto Fix Flow - 自动化修复流程
+
+### 编译错误处理
+
+当 `hvigorw assembleHap` 报错时，必须执行以下修复流程：
+
+```
+步骤1: 读取错误日志
+       - 查看终端输出的错误信息
+       - 读取 .hvigor/outputs/build-logs/build.log
+
+步骤2: 分析错误类型
+       - SDK 版本不匹配 → 修改 build-profile.json5
+       - 依赖冲突 → 修改 oh-package.json5
+       - ArkTS 语法错误 → 修复代码
+       - 资源缺失 → 补充资源文件
+
+步骤3: 自动修复
+       根据错误类型执行对应修复
+
+步骤4: 重新编译验证
+       hvigorw assembleHap --no-daemon
+```
+
+### 常见错误修复
+
+| 错误类型 | 错误特征 | 修复方案 |
+|---------|---------|---------|
+| **SDK 版本** | `Configuration Error`, `modelVersionCheck` | 更新 `hvigor-config.json5` 和 `build-profile.json5` 的版本号 |
+| **依赖冲突** | `dependency conflict`, `version mismatch` | 更新 `oh-package.json5` 中的依赖版本 |
+| **资源缺失** | `Cannot find resource` | 补充 string.json/color.json 中缺失的资源定义 |
+| **类型错误** | `Type 'xxx' is not assignable` | 修复 ArkTS 代码类型定义 |
+| **导入错误** | `Cannot find module` | 检查 import 路径和模块是否存在 |
+| **Java 缺失** | `spawn java ENOENT` | 提示用户配置 Java 环境 (系统问题，非代码问题) |
+
+### 修复示例
+
+```
+错误: modelVersionCheck failed
+
+修复:
+1. 读取 hvigor/hvigor-config.json5 获取当前 modelVersion
+2. 读取用户其他项目的配置确认正确版本
+3. 更新 modelVersion 为正确值
+4. 重新编译
+```
+
+---
+
+## Rule 15: NEXT Features - HarmonyOS NEXT 特色增强
+
+### 主动推荐策略
+
+在以下场景中，**主动询问用户是否需要使用 NEXT 特色功能**：
+
+### 15.1 元服务适配 (Atomic Service)
+
+**触发场景**: 创建新项目、设计首页
+
+```
+询问: "是否需要适配元服务（Atomic Service）卡片？
+      元服务支持免安装直达，可在负一屏、搜索结果中展示。"
+
+如果需要:
+- 生成 FormAbility 配置
+- 提供 2x2、2x4、4x4 三种卡片尺寸模板
+- 配置 form_config.json
+```
+
+### 15.2 实况窗 (Live View)
+
+**触发场景**: 涉及流程进度的功能（外卖、打车、快递、运动）
+
+```
+询问: "此功能涉及实时进度展示，是否使用实况窗（Live View）？
+      实况窗可在锁屏、灵动岛位置持续显示进度。"
+
+如果需要:
+- 引入 @kit.LiveViewKit
+- 提供 LiveViewManager 使用示例
+- 配置后台保活权限
+```
+
+```typescript
+// 实况窗示例代码
+import { liveViewManager } from '@kit.LiveViewKit'
+
+// 创建实况窗
+const liveView = await liveViewManager.createLiveView({
+  title: '外卖配送中',
+  content: '骑手距您约 2.3km',
+  icon: $r('app.media.ic_delivery'),
+  // ...
+})
+```
+
+### 15.3 统一扫码 (Scan Kit)
+
+**触发场景**: 涉及扫码输入（登录、支付、添加好友）
+
+```
+询问: "是否使用系统统一扫码（Scan Kit）？
+      系统扫码更快速准确，支持多种码制。"
+
+如果需要:
+- 引入 @kit.ScanKit
+- 提供 scanBarcode API 示例
+- 处理扫码结果回调
+```
+
+```typescript
+import { scanBarcode, scanCore } from '@kit.ScanKit'
+
+// 调用系统扫码
+scanBarcode.startScanForResult(getContext(this), {
+  scanTypes: [scanCore.ScanType.ALL],
+  enableMultiMode: false,
+  enableAlbum: true
+}).then((result) => {
+  console.info(`扫码结果: ${result.originalValue}`)
+})
+```
+
+### 15.4 原生分享 (Share Kit)
+
+**触发场景**: 涉及内容分享（图片、链接、文件）
+
+```
+询问: "是否使用系统原生分享（Share Kit）？
+      原生分享支持直接分享到系统应用和第三方应用。"
+
+如果需要:
+- 引入 @kit.ShareKit  
+- 提供 systemShare API 示例
+```
+
+```typescript
+import { systemShare } from '@kit.ShareKit'
+
+// 分享文本
+const shareData = new systemShare.SharedData()
+shareData.addContent({ text: '分享内容' })
+
+const controller = new systemShare.ShareController(shareData)
+controller.show(getContext(this))
+```
+
+### 15.5 功能推荐触发表
+
+| 用户需求关键词 | 推荐功能 | Kit |
+|---------------|---------|-----|
+| 扫码、扫一扫、二维码 | 统一扫码 | @kit.ScanKit |
+| 分享、转发、发送给 | 原生分享 | @kit.ShareKit |
+| 进度、配送、运动、计时 | 实况窗 | @kit.LiveViewKit |
+| 卡片、小组件、负一屏 | 元服务 | FormKit |
+| 支付、钱包 | 华为支付 | @kit.PaymentKit |
+| 推送、通知、消息 | 推送服务 | @kit.PushKit |
+| 登录、账号 | 华为账号 | @kit.AccountKit |
+| 地图、定位、导航 | 位置服务 | @kit.LocationKit |
+| 语音、语音输入 | 语音服务 | @kit.CoreSpeechKit |
+| AI、识别、分析 | AI 能力 | @kit.CoreVisionKit |
+
+---
+
 ## Summary Checklist
 
 Before submitting any code, verify:
 
+**语言规范 (Rule 1)**
 - [ ] No `any` type used
 - [ ] All types are explicitly defined
+
+**UI 框架 (Rule 2)**
 - [ ] Using @Component decorator
-- [ ] Using appropriate state decorators
+- [ ] Using @Entry for entry pages
+
+**状态管理 (Rule 3)**
+- [ ] Using appropriate state decorators (@State, @Prop, @Link, etc.)
+
+**资源引用 (Rule 4)**
 - [ ] No hardcoded color values (use $r('app.color.xxx'))
 - [ ] No hardcoded string values (use $r('app.string.xxx'))
 - [ ] Resource files are properly defined
 - [ ] Dark mode resources are defined if needed
+
+**代码规范 (Rule 5 & 6)**
+- [ ] No emoji characters in code or comments
+- [ ] Icons checked: native symbols used if available, otherwise SVG from allsvgicons.com
+
+**设计规范 (Rule 7)**
+- [ ] 响应式布局已实现（GridCol/breakpoints/layoutWeight）
+- [ ] 圆角使用标准值（8/12/16/24vp）
+- [ ] 动效使用推荐曲线（Curve.Friction/Sharp）
+
+**代码质量 (Rule 8)**
+- [ ] No px unit used (use vp/fp)
+- [ ] build() 方法保持纯净，无复杂逻辑
+- [ ] 复杂样式使用 AttributeModifier 抽离
+- [ ] 导航使用 Navigation 组件
+
+**开发流程 (Rule 9)**
+- [ ] 已分析多设备适配方案
+- [ ] 数据模型已定义
+- [ ] UI 组件化设计
+- [ ] 已添加适当的动效
+
+**项目创建 (Rule 10)**
+- [ ] 使用初始化脚本创建项目 (python scripts/init_harmony_project.py)
+- [ ] 已指定正确的 SDK 版本 (--sdk 参数)
+- [ ] 已验证 ArkTS 编译通过 (hvigorw assembleHap)
+
+**资源完整性 (Rule 11)**
+- [ ] 代码中的 $r('app.string.xxx') 都有对应的 string.json 定义
+- [ ] 代码中的 $r('app.color.xxx') 都有对应的 color.json 定义
+- [ ] 资源命名遵循 模块名_功能名_属性名 格式
+
+**布局策略 (Rule 12)**
+- [ ] 基础组件使用 layoutWeight 或百分比自适应
+- [ ] 列表/宫格使用 Grid + breakpoints 延伸布局
+- [ ] 宽屏 (>600vp) 启用分栏布局
+
+**性能优化 (Rule 13)**
+- [ ] 优先使用 RelativeContainer 减少嵌套层级
+- [ ] 大数据列表 (>50) 使用 LazyForEach + keyGenerator
+- [ ] 频繁更新的状态拆分为独立子组件
+- [ ] build() 中无复杂计算逻辑
+
+**自动修复 (Rule 14)**
+- [ ] 编译错误已分析并修复
+- [ ] 修复后已重新验证编译
+
+**NEXT 特色 (Rule 15)**
+- [ ] 已询问是否需要元服务卡片适配
+- [ ] 进度类功能已考虑实况窗
+- [ ] 扫码/分享功能优先使用系统 Kit

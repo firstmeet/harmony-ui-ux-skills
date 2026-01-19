@@ -1,0 +1,13 @@
+decorator,description,scope,usage_scenario,code_example
+@State,组件内部状态管理,单个组件,组件内需要响应式更新的数据,"@State count: number = 0"
+@Prop,父组件向子组件单向传递数据,父子组件,子组件只读父组件数据,"@Prop title: string"
+@Link,父子组件双向同步数据,父子组件,子组件需要修改父组件状态,"@Link isSelected: boolean"
+@Provide/@Consume,跨组件层级共享状态,组件树,深层嵌套组件间共享数据,"@Provide('theme') theme: string = 'light'; @Consume('theme') theme: string"
+@Observed/@ObjectLink,观察对象属性变化,复杂对象,类实例属性变化时触发更新,"@Observed class User { @Track name: string = '' }"
+@Watch,监听状态变化执行回调,状态监听,状态变化时执行额外逻辑,"@State @Watch('onCountChange') count: number = 0"
+@StorageLink,持久化存储双向绑定,应用级存储,用户偏好设置等需持久化的数据,"@StorageLink('theme') theme: string = 'light'"
+@StorageProp,持久化存储单向读取,应用级存储,只读持久化数据,"@StorageProp('userId') userId: string = ''"
+@LocalStorageLink,页面级存储双向绑定,页面级别,页面内多组件共享数据,"@LocalStorageLink('pageData') data: DataModel = new DataModel()"
+AppStorage,应用级全局状态存储,全应用,全局配置和状态,"AppStorage.setOrCreate('key', value); let val = AppStorage.get<Type>('key')"
+LocalStorage,页面级状态存储,页面级别,页面内共享状态,"let storage = new LocalStorage(); storage.setOrCreate('key', value)"
+PersistentStorage,持久化到磁盘,永久存储,应用重启后需保持的数据,"PersistentStorage.persistProp('key', defaultValue)"

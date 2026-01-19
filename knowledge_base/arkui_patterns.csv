@@ -1,0 +1,17 @@
+pattern_name,description,components_used,code_example,use_case
+列表项模式,标准列表项布局结构,"Row,Image,Column,Text","Row({space:12}){Image().width(48).height(48);Column(){Text(title);Text(subtitle)}.layoutWeight(1);Image($r('sys.symbol.chevron_right'))}",设置列表、联系人列表
+卡片模式,标准卡片布局结构,"Column,Row,Text","Column(){Row(){Text(title);Blank();Text(more)};/* content */}.padding(16).backgroundColor($r('app.color.bg_card')).borderRadius(12)",数据卡片、信息卡片
+表单布局模式,表单输入布局,"Column,Text,TextInput","Column({space:8}){Text(label).fontWeight(FontWeight.Medium);TextInput({placeholder:hint}).height(48).borderRadius(8)}",登录表单、信息编辑
+标签云模式,自动换行标签,"Flex,Text","Flex({wrap:FlexWrap.Wrap}){ForEach(tags,(tag)=>{Text(tag).padding(8).backgroundColor(bgColor).borderRadius(16).margin({right:8,bottom:8})})}",技能标签、分类标签
+浮动按钮模式,悬浮操作按钮,"Stack,Button","Stack({alignContent:Alignment.BottomEnd}){/* content */;Button(){Image(icon)}.type(ButtonType.Circle).width(56).height(56).margin(16)}",添加按钮、返回顶部
+图文混排模式,图片加文字组合,"Column,Image,Text","Column(){Image(cover).width('100%').aspectRatio(1.5);Column(){Text(title);Text(desc)}.padding(12)}",商品卡片、文章卡片
+分组设置模式,设置页分组布局,"Column,Text,List","Column(){Text(groupTitle).fontSize(13);Column(){ForEach(items,(item)=>{/* 设置项 */})}.backgroundColor($r('app.color.bg_card')).borderRadius(12)}",设置页面
+搜索栏模式,搜索输入布局,"Row,Search,Button","Row(){Search({placeholder:'搜索'}).layoutWeight(1);Button('取消')}",搜索页面
+底部操作栏模式,固定底部按钮,"Stack,Row,Button","Stack(){Scroll(){/* content */};Row(){Button('取消').layoutWeight(1);Button('确认').layoutWeight(1)}.position({bottom:0})}",详情页操作
+空状态模式,无数据空状态,"Column,Image,Text","Column(){Image($r('app.media.empty')).width(120);Text('暂无数据');Button('刷新试试')}",列表空态
+加载状态模式,数据加载中,"Column,LoadingProgress,Text","Column(){LoadingProgress().width(48);Text('加载中...')}",页面加载
+错误状态模式,请求错误状态,"Column,Image,Text,Button","Column(){Image($r('app.media.error'));Text('网络错误');Button('重试')}",网络错误
+计时器模式,倒计时/正计时,"Stack,Circle,Text","Stack(){Circle().stroke(color);Text(timerText).fontSize(48).fontFamily('monospace')}",运动计时、喂养计时
+统计卡片模式,数据统计展示,"Row,Column,Image,Text","Row(){ForEach(stats,(stat)=>{Column(){Image(icon);Text(value).fontWeight(Bold);Text(label)}.layoutWeight(1)})}",今日数据、业绩统计
+导航列表模式,带箭头的设置项,"Row,Image,Text","Row(){Image(icon);Text(title).layoutWeight(1);Image($r('sys.symbol.chevron_right'))}.padding(16)",设置选项
+头像信息模式,用户信息卡片,"Row,Image,Column,Text","Row(){Image(avatar).borderRadius(24);Column(){Text(name).fontWeight(Bold);Text(subtitle)}}.padding(16)",用户卡片

@@ -1,0 +1,7 @@
+step,action,description,details
+1,检查原生图标,查询HarmonyOS Symbol图标是否存在,访问官方图标文档 https://developer.huawei.com/consumer/cn/doc/harmonyos-references-V5/ts-components-general-symbol-glyph-V5 或使用DevEco Studio的图标预览功能
+2,使用原生图标,如果存在则直接使用系统图标,"Image($r('sys.symbol.xxx')) 或 SymbolGlyph($r('sys.symbol.xxx'))"
+3,获取替代图标,如果原生图标不存在则从allsvgicons.com获取,访问 https://allsvgicons.com/ 搜索需要的图标
+4,下载SVG,选择合适的图标库下载SVG格式,推荐图标库: Material Symbols / Phosphor / Tabler Icons / Lucide / HeroIcons
+5,保存到项目,将SVG文件保存到resources/base/media目录,命名规范: ic_功能名.svg 如 ic_cart.svg / ic_wallet.svg
+6,使用自定义图标,在代码中引用本地SVG图标,"Image($r('app.media.ic_xxx')).width(24).height(24).fillColor($r('app.color.icon_primary'))"

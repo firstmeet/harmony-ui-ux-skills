@@ -1,0 +1,11 @@
+effect_name,description,implementation,components_used,sample_project
+图片滤镜,使用ColorFilter对图片进行色彩处理实现滤镜效果,colorFilter属性,Image和Swiper,基于colorFilter实现图片滤镜效果
+图片拉伸,聊天消息气泡四周圆角固定中间可拉伸,resizable属性(slice和lattice),Image,基于resizable实现图片拉伸效果
+文字渐变,Text组件实现渐变色文字效果,linearGradient,Text,基于Text组件及通用属性实现文字特效
+歌词滚动,歌词实时滚动高亮当前歌词,animateTo和Scroll,Text和Scroll,基于Text组件及通用属性实现文字特效
+文字倒影,文字下方显示倒影效果,transform和opacity,Text,基于Text组件及通用属性实现文字特效
+跑马灯渐变,文字滚动显示渐变透明效果,marquee和linearGradient,Text和Marquee,基于Text组件及通用属性实现文字特效
+音频动效,根据音频分贝实时绘制波形动画,Canvas和AudioRenderer,XComponent或Canvas,实现音频动效
+短视频滑动,短视频上下流畅滑动切换,SwipePlayer,Swiper和Video,实现短视频流畅点播
+弹窗动画,弹窗出现和消失的过渡动画,transition和animateTo,CustomDialog,基于DialogHub的通用弹窗
+轮播缩放,图片轮播时平滑缩放动画,scale和animateTo,Swiper和Image,基于colorFilter实现图片滤镜效果

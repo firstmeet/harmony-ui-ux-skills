@@ -1,0 +1,10 @@
+category,capability_name,description,kit_used,sample_project
+网络,大文件高速并发传输,基于SFFT库实现大文件高速并发上传下载,SFFT,基于SFFT的大文件高速并发传输
+网络,网络感知和预测,网络质量评估网络场景识别应用传输体验反馈,Network Boost Kit,基于网络感知和预测能力实现网络加速
+账号管理,应用账号管理,支持注册登录并设置账号相关信息,AppAccountManager,基于AppAccountManager能力实现应用账号管理
+算法加速,矩形区域划分,网格数据处理和空间几何计算算法加速,FAST Kit,基于FAST Kit实现矩形区域划分
+企业安全,企业数据保护,打开读取文件设置查询文件标签扫描公共目录文件清单,Enterprise Data Guard Kit,企业数据保护服务
+认证安全,通行密钥,通行密钥注册本地免密认证和跨设备扫码认证,Online Auth Kit,基于在线认证服务实现通行密钥功能
+穿戴设备,穿戴服务,设备信息查询应用间消息通信状态查询与订阅模板化通知,Wear Engine Kit,穿戴服务
+隐私保护,防窥保护,敏感信息防窥隐藏敏感信息,Device Security Kit,基于防窥保护能力实现敏感信息防窥功能
+跨设备协同,跨设备互通,通过NDK接口实现跨设备互通,Service Collaboration Kit,实现跨设备互通功能

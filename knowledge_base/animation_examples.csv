@@ -1,0 +1,13 @@
+animation_name,description,animation_type,code_example,use_case
+按钮点击缩放,按钮按下时缩小松开时恢复,scale动画,"Button().scale({x:this.isPressed?0.95:1,y:this.isPressed?0.95:1}).animation({duration:100})",按钮反馈
+列表项进入,列表项从右侧滑入,translate动画,"Row().translate({x:this.isVisible?0:100}).opacity(this.isVisible?1:0).animation({duration:300,curve:Curve.EaseOut})",列表加载动画
+卡片展开,卡片高度展开收起,height动画,"Column().height(this.isExpanded?200:80).animation({duration:250,curve:Curve.FastOutSlowIn})",可折叠卡片
+旋转加载,图标持续旋转,rotate动画,"Image().rotate({angle:this.rotateAngle}).onAppear(()=>{animateTo({duration:1000,iterations:-1}),()=>{this.rotateAngle=360}})",加载指示器
+渐显渐隐,元素透明度渐变,opacity动画,"Column().opacity(this.show?1:0).animation({duration:200})",过渡显示隐藏
+弹性缩放,元素弹性放大,spring动画,"Image().scale({x:this.scale,y:this.scale}).animation({curve:curves.springMotion()})",点赞反馈
+抖动提示,元素左右抖动,translate动画,"TextInput().translate({x:this.shake?[-5,5,-5,5,0][this.shakeIndex]:0}).animation({duration:50})",输入错误提示
+数字滚动,数字滚动变化,counter动画,"Text(this.displayValue.toString()).animation({duration:500}).onAppear(()=>{animateTo({duration:500},()=>{this.displayValue=this.targetValue})})",数据统计
+背景色切换,背景颜色平滑过渡,backgroundColor动画,"Row().backgroundColor(this.isActive?$r('app.color.primary'):$r('app.color.bg_secondary')).animation({duration:200})",Tab切换
+页面转场,页面切换动画,pageTransition,".pageTransition(PageTransitionEnter.create({type:RouteType.Push,opacity:0,translate:{x:100}}).duration(300))",页面跳转
+下拉刷新,下拉时箭头旋转,rotate动画,"Image().rotate({angle:this.pullDistance>60?180:0}).animation({duration:200})",下拉刷新指示
+骨架屏闪烁,加载时骨架屏闪烁,opacity动画,"Column().opacity(this.shimmer?0.3:0.7).animation({duration:800,iterations:-1,playMode:PlayMode.Alternate})",骨架屏加载

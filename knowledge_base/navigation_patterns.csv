@@ -1,0 +1,10 @@
+pattern_name,description,components_used,code_example,use_case
+Tabs底部导航,底部标签页切换,"Tabs,TabContent","Tabs({barPosition:BarPosition.End}){TabContent(){HomePage()}.tabBar(this.tabBuilder('首页',0));TabContent(){MinePage()}.tabBar(this.tabBuilder('我的',1))}",主页面底部导航
+Navigation侧滑返回,带返回按钮的导航,"Navigation,NavRouter","Navigation(){NavRouter(){NavDestination(){DetailPage()}.title('详情')}}.mode(NavigationMode.Stack)",二级页面导航
+SideBarContainer侧边栏,侧边栏导航,"SideBarContainer,Column","SideBarContainer(){Column(){/*侧边栏内容*/};Column(){/*主内容*/}}.showSideBar(true).sideBarPosition(SideBarPosition.Start)",平板端侧边导航
+路由跳转,编程式导航,"router.pushUrl","router.pushUrl({url:'pages/DetailPage',params:{id:itemId}})",页面跳转传参
+路由返回,返回上一页,"router.back","router.back({url:'pages/HomePage'})",返回操作
+路由替换,替换当前页面,"router.replaceUrl","router.replaceUrl({url:'pages/NewPage'})",登录后替换页面
+系统路由表,模块化路由,router_map.json,配置路由表实现模块间跳转,大型应用解耦
+NavPathStack导航栈,声明式导航,"Navigation,NavDestination","Navigation(this.pageStack){}.navDestination(this.pageBuilder).mode(NavigationMode.Stack)",复杂导航场景
+模态页面,覆盖式弹出页面,bindSheet,"Column().bindSheet($$isPresent,sheetBuilder,{height:SheetSize.MEDIUM})",半屏弹出详情

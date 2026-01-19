@@ -69,6 +69,34 @@ Use the slash command to invoke the skill:
 /harmony-ui-ux-pro-max Build a dashboard for my HarmonyOS app
 ```
 
+### Project Initializer
+
+使用 Python 脚本快速创建 HarmonyOS NEXT 项目：
+
+```bash
+# 基础用法 (必须指定 SDK 版本)
+python scripts/init_harmony_project.py MyApp --sdk "6.0.2(22)"
+
+# 指定目录
+python scripts/init_harmony_project.py MyApp --sdk "6.0.2(22)" --path E:/projects
+
+# 自定义包名
+python scripts/init_harmony_project.py MyApp --sdk "6.0.2(22)" --bundle com.mycompany
+
+# 使用旧版本 SDK
+python scripts/init_harmony_project.py MyApp --sdk "5.0.0(12)"
+```
+
+**SDK 版本格式**: `主版本.次版本.修订版(API版本)`，如 `6.0.2(22)`
+
+查看当前 SDK 版本：在 DevEco Studio 现有项目的 `build-profile.json5` 中查看 `compatibleSdkVersion`
+
+初始化脚本会自动生成：
+- 完整的项目结构 (oh-package.json5, build-profile.json5 等)
+- 设计系统资源文件 (color.json, string.json, float.json)
+- 深色模式支持 (dark/element/color.json)
+- 符合规范的示例页面 (响应式布局、Tabs 导航)
+
 ### Search Script
 
 ```bash

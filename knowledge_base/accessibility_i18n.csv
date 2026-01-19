@@ -1,0 +1,11 @@
+feature,description,implementation,code_example,best_practice
+无障碍标签,为元素添加无障碍描述,accessibilityText,"Image($r('app.media.icon')).accessibilityText($r('app.string.icon_desc'))",所有图标都需要描述
+无障碍组,将相关元素组合,accessibilityGroup,"Row().accessibilityGroup(true).accessibilityText('用户信息区域')",逻辑相关元素分组
+焦点顺序,控制焦点导航顺序,tabIndex,"Button().tabIndex(1);TextInput().tabIndex(2)",确保焦点顺序符合逻辑
+高对比度,支持高对比度模式,配置暗色主题资源,"定义dark/element/color.json覆盖颜色",确保文字可读性
+字体缩放,支持系统字体缩放,使用相对字体大小,"Text().fontSize($r('app.float.font_body'))",避免使用固定像素值
+触控目标,确保可点击区域足够大,minTouchTargetSize,"Button().width(48).height(48)",最小44x44vp
+字符串资源,使用资源文件管理文本,string.json,"Text($r('app.string.welcome'))",所有显示文本使用资源
+多语言支持,支持多种语言,resources/语言目录,"resources/en_US/element/string.json",为每种语言创建资源
+RTL支持,支持从右到左布局,direction,"Row().direction(Direction.Auto)",自动适应RTL语言
+颜色语义,使用语义化颜色命名,color.json,"$r('app.color.text_primary')而非$r('app.color.black')",避免直接使用颜色名
