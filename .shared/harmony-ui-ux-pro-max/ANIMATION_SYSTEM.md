@@ -6,6 +6,109 @@
 
 ---
 
+## ⚠️ 重要：API 12+ 动画 API 迁移
+
+### 废弃 API 警告
+
+从 **API 12 (HarmonyOS NEXT 5.0)** 开始，全局 `animateTo()` 函数已被标记为 **废弃 (deprecated)**。
+
+```
+WARN: 'animateTo' has been deprecated.
+```
+
+### 新 API：`getUIContext().animateTo()`
+
+必须使用组件上下文的 `animateTo()` 方法替代全局函数：
+
+| 旧 API (废弃) | 新 API (推荐) |
+|--------------|---------------|
+| `animateTo(options, closure)` | `this.getUIContext().animateTo(options, closure)` |
+
+### 迁移示例
+
+**❌ 旧写法 (已废弃):**
+
+```typescript
+Button('触发动画')
+  .onClick(() => {
+    animateTo({
+      duration: 300,
+      curve: Curve.Friction
+    }, () => {
+      this.isExpanded = !this.isExpanded
+    })
+  })
+```
+
+**✅ 新写法 (推荐):**
+
+```typescript
+Button('触发动画')
+  .onClick(() => {
+    this.getUIContext().animateTo({
+      duration: 300,
+      curve: Curve.Friction
+    }, () => {
+      this.isExpanded = !this.isExpanded
+    })
+  })
+```
+
+### 循环动画迁移
+
+对于 `setInterval` 中的动画，同样需要迁移：
+
+```typescript
+// ❌ 旧写法
+private startBreatheAnimation(): void {
+  setInterval(() => {
+    animateTo({
+      duration: 2000,
+      curve: Curve.EaseInOut
+    }, () => {
+      this.scale = this.scale === 1 ? 1.02 : 1
+    })
+  }, 2000)
+}
+
+// ✅ 新写法
+private startBreatheAnimation(): void {
+  setInterval(() => {
+    this.getUIContext().animateTo({
+      duration: 2000,
+      curve: Curve.EaseInOut
+    }, () => {
+      this.scale = this.scale === 1 ? 1.02 : 1
+    })
+  }, 2000)
+}
+```
+
+### 迁移原因
+
+1. **上下文隔离**：新 API 通过 `UIContext` 显式管理动画上下文，避免全局状态污染
+2. **组件化设计**：更符合 HarmonyOS NEXT 的组件化设计理念
+3. **多窗口支持**：为多窗口场景提供更好的支持
+
+### AI 行为规范
+
+生成任何使用 `animateTo` 的代码时，**必须**使用 `this.getUIContext().animateTo()`：
+
+```typescript
+// AI 生成代码必须遵循此模式
+this.getUIContext().animateTo({
+  duration: 300,
+  curve: Curve.Friction,
+  onFinish: () => {
+    console.info('动画完成')
+  }
+}, () => {
+  // 状态变更
+})
+```
+
+---
+
 ## 1. 系统推荐曲线 (Animation Curves)
 
 ### 曲线一览表
@@ -57,7 +160,7 @@ Column() {
       })
   }
   .onClick(() => {
-    animateTo({
+    this.getUIContext().animateTo({
       duration: 300,
       curve: Curve.Friction
     }, () => {
@@ -101,7 +204,7 @@ Button($r('app.string.submit'))
 
 Toggle({ type: ToggleType.Switch, isOn: this.isOn })
   .onChange((value) => {
-    animateTo({
+    this.getUIContext().animateTo({
       duration: 150,
       curve: Curve.Sharp
     }, () => {
@@ -150,7 +253,7 @@ Column() {
       if (this.refreshOffset > 60) {
         this.startRefresh()
       } else {
-        animateTo({ duration: 300, curve: Curve.Spring }, () => {
+        this.getUIContext().animateTo({ duration: 300, curve: Curve.Spring }, () => {
           this.refreshOffset = 0
         })
       }
@@ -352,7 +455,7 @@ struct PropertyAnimationDemo {
 }
 ```
 
-### animateTo 显式动画
+### getUIContext().animateTo 显式动画
 
 ```typescript
 @Component
@@ -372,7 +475,7 @@ struct AnimateToDemo {
       // 触发按钮
       Button('切换状态')
         .onClick(() => {
-          animateTo({
+          this.getUIContext().animateTo({
             duration: 300,
             curve: Curve.Friction,
             onFinish: () => {
@@ -407,7 +510,7 @@ struct ConditionalTransition {
     Column({ space: 20 }) {
       Button(this.showContent ? '隐藏' : '显示')
         .onClick(() => {
-          animateTo({ duration: 300, curve: Curve.Friction }, () => {
+          this.getUIContext().animateTo({ duration: 300, curve: Curve.Friction }, () => {
             this.showContent = !this.showContent
           })
         })
@@ -451,7 +554,7 @@ struct AnimatedList {
     Column() {
       Button('添加项目')
         .onClick(() => {
-          animateTo({ duration: 300, curve: Curve.Friction }, () => {
+          this.getUIContext().animateTo({ duration: 300, curve: Curve.Friction }, () => {
             this.items.push(`项目${this.items.length + 1}`)
           })
         })
@@ -464,7 +567,7 @@ struct AnimatedList {
               Blank()
               Button('删除')
                 .onClick(() => {
-                  animateTo({ duration: 300, curve: Curve.Friction }, () => {
+                  this.getUIContext().animateTo({ duration: 300, curve: Curve.Friction }, () => {
                     this.items.splice(index, 1)
                   })
                 })
@@ -501,10 +604,11 @@ struct AnimatedList {
 
 ## 7. 动画检查清单
 
+- [ ] **使用 `this.getUIContext().animateTo()` 而非全局 `animateTo()`**
 - [ ] 页面转场使用 `Curve.Friction`，时长 300ms
 - [ ] 按钮反馈使用 `Curve.Sharp`，时长 100-150ms
 - [ ] 弹性效果使用 `Curve.Spring`
 - [ ] 条件渲染配置 transition 入场/退场动画
-- [ ] 列表项增删使用 animateTo 包裹
+- [ ] 列表项增删使用 `getUIContext().animateTo()` 包裹
 - [ ] 共享元素设置相同的 sharedTransition ID
 - [ ] 动画时长不超过 500ms（除循环动画外）

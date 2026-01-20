@@ -22,7 +22,7 @@ An AI SKILL that provides design intelligence for building professional UI/UX fo
 │  • 实况窗 (Live View)    → LIVE_VIEW_GUIDE.md                   │
 │  • 一多 / 响应式         → RESPONSIVE_STRATEGY.md               │
 │  • 元服务 / 卡片         → ATOMIC_SERVICE_GUIDE.md              │
-│  • 动效 / 动画           → ANIMATION_SYSTEM.md                  │
+│  • 动效 / 动画 / animateTo → ANIMATION_SYSTEM.md                │
 │  • 列表 / 商品           → PERFORMANCE_GUARD.md (LazyForEach)   │
 │  • 分布式 / 跨设备       → DISTRIBUTED_SYNC.md                  │
 │  • 碰一碰 / 协作         → COLLABORATION_PATTERN.md             │
@@ -70,19 +70,25 @@ An AI SKILL that provides design intelligence for building professional UI/UX fo
 | 实况窗、Live View、进度 | `LIVE_VIEW_GUIDE.md` | LiveViewLockScreenExtensionAbility |
 | 一多、响应式、多设备 | `RESPONSIVE_STRATEGY.md` | GridRow/GridCol + breakpoints |
 | 元服务、卡片、Widget | `ATOMIC_SERVICE_GUIDE.md` | FormExtensionAbility |
-| 动效、动画、转场 | `ANIMATION_SYSTEM.md` | Curve.Friction/Sharp/Spring |
+| 动效、动画、转场、animateTo | `ANIMATION_SYSTEM.md` | getUIContext().animateTo + Curve.Friction/Sharp/Spring |
 | 列表、长列表、商品列表 | `PERFORMANCE_GUARD.md` | LazyForEach + IDataSource |
 | 分布式、跨设备、同步 | `DISTRIBUTED_SYNC.md` | DistributedDataObject |
 | 碰一碰、NFC、协作 | `COLLABORATION_PATTERN.md` | WaitingForTapView |
 | 持久化、离线、缓存 | `STORAGE_GUIDE.md` | RDB + Offline-First |
+| **页面跳转、导航、Navigation** | `NAVIGATION_ARCHITECTURE_GUIDE.md` | @Provide/@Consume + NavPathStack |
 | MVVM、架构、ViewModel | `ARCHITECTURE.md` | @ObservedV2 + @Trace |
 | 登录、账号、支付 | `KITS_CATALOG.md` | Account Kit / IAP Kit |
 | 语音、OCR、人脸 | `AI_KITS_GUIDE.md` | Core Vision/Speech Kit |
+| **透明度、alpha、玻璃态** | `COLOR_FORMAT_GUIDE.md` | `#AARRGGBB` 格式转换 |
+| **原型图源码、HTML/CSS** | `PROTOTYPE_SOURCE_ANALYSIS.md` | Tailwind → HarmonyOS |
+| **Tailwind、CSS 转换** | `COLOR_FORMAT_GUIDE.md` | 透明度换算表 |
 | 电商、外卖、办公 | `INDUSTRY_PRACTICES.md` | 行业开发方案 |
 | 推送、通知 | `KITS_CATALOG.md` | Push Kit / Notification Kit |
 | 地图、定位 | `KITS_CATALOG.md` | Map Kit / Location Kit |
 | 扫码、二维码 | `KITS_CATALOG.md` | Scan Kit |
 | 相机、拍照 | `KITS_CATALOG.md` | Camera Kit |
+| **原型图链接** | `DESIGN_TOKEN_EXTRACTION.md` | 设计 Token 提取流程 |
+| 自定义字体、品牌字体 | `CUSTOM_FONT_GUIDE.md` | FontManager + EntryAbility 集成 |
 
 ### 违规示例
 
@@ -177,6 +183,274 @@ python scripts/init_harmony_project.py <项目名> --sdk "<版本>" --path <目�
 python scripts/init_harmony_project.py <项目名> --sdk "<版本>" --bundle <包名前缀>
 ```
 
+## ⚠️ Rule 16: Prototype Import (原型图导入规则)
+
+当用户提供**原型图链接**或**设计截图**时，必须执行以下设计 Token 提取流程：
+
+### 触发条件
+
+| 触发方式 | 示例 |
+|---------|------|
+| **Google Stitch** | `https://stitch.withgoogle.com/projects/xxx` |
+| **Figma** | `https://www.figma.com/file/xxx` |
+| **MasterGo** | `https://mastergo.com/files/xxx` |
+| **设计截图** | 用户上传的设计规范图片 |
+| **口头引用** | "参照这个原型图" / "看一下这个设计" |
+
+### 执行流程
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Phase 1: 访问原型图                                              │
+├─────────────────────────────────────────────────────────────────┤
+│  1. 使用浏览器工具导航到原型图链接                                  │
+│  2. 等待页面完全加载 (至少 3 秒)                                   │
+│  3. 获取页面快照 (snapshot) 提取结构信息                           │
+│  4. 截取屏幕截图用于视觉分析                                       │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Phase 2: 遍历所有 Screen                                         │
+├─────────────────────────────────────────────────────────────────┤
+│  1. 识别原型图中的所有页面/画板                                     │
+│  2. 特别关注 "Design System" / "UI Kit" / "规范" 页面              │
+│  3. 记录每个 Screen 的名称和功能                                   │
+│  4. 生成 Screen 清单报告                                          │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Phase 2.5: 源码分析 (HTML/CSS 原型图)                             │
+├─────────────────────────────────────────────────────────────────┤
+│  如果原型图是 HTML/CSS 实现 (如 Google Stitch):                    │
+│  1. 获取页面 HTML 源码 (browser_evaluate 或 curl 下载)             │
+│  2. 提取 Tailwind 类名并转换为 HarmonyOS 颜色格式                   │
+│     ⚠️ 关键: bg-white/60 → #99FFFFFF (不是 #FFFFFF99!)            │
+│  3. 提取完整 SVG 图标代码 (不要截断!)                               │
+│  4. 下载图片资源到 resources/base/media/                          │
+│  5. 提取 CSS 动画并转换为 ArkTS animateTo                          │
+│  详见: PROTOTYPE_SOURCE_ANALYSIS.md, COLOR_FORMAT_GUIDE.md        │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Phase 3: 提取设计 Token                                          │
+├─────────────────────────────────────────────────────────────────┤
+│  从设计规范页面提取以下信息：                                       │
+│  • 色彩系统 (Color Palette) - 主色/次色/背景色/文字色              │
+│  • 字体规范 (Typography) - 字号/字重/行高                         │
+│  • 间距规范 (Spacing) - 基于 8vp 网格                             │
+│  • 圆角规范 (Border Radius)                                       │
+│  • 阴影规范 (Shadows)                                            │
+│  • 动效参数 (Motion/Animation) - 如有                             │
+│  ⚠️ 颜色格式: 透明度必须使用 #AARRGGBB (Alpha 在前)                │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Phase 4: 输出资源文件                                            │
+├─────────────────────────────────────────────────────────────────┤
+│  必须输出以下内容：                                                │
+│  1. 设计 Token 摘要表格 (Markdown)                                │
+│  2. color.json 片段                                               │
+│  3. float.json 片段                                               │
+│  4. dark/color.json 片段 (如原型图有深色模式)                       │
+│  5. 可选: design-system/tokens.ets                                │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Phase 5: 询问写入                                                │
+├─────────────────────────────────────────────────────────────────┤
+│  询问用户: "需要我将这些 Token 写入当前项目吗？"                     │
+│  如果用户确认:                                                    │
+│  - 合并到 entry/src/main/resources/base/element/                  │
+│  - 合并到 entry/src/main/resources/dark/element/                  │
+│  - 避免覆盖已有定义 (除非用户明确要求)                              │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 输出模板
+
+```markdown
+## 🎨 从原型图提取的设计 Token
+
+**来源**: [原型图链接]
+**Screen 数量**: X 个页面
+
+### 色彩系统
+
+| 名称 | 亮色模式 | 暗色模式 | 用途 |
+|-----|---------|---------|------|
+| brand_primary | #00BFFF | #00D4FF | 主品牌色 |
+| brand_accent | #FF6B6B | #FF8080 | 强调色 |
+
+### 圆角规范
+
+| 名称 | 值 | 应用场景 |
+|-----|-----|---------|
+| radius_aura | 24vp | Aura 风格大卡片 |
+
+### 动效参数 (如有)
+
+| 名称 | 值 | 说明 |
+|-----|-----|------|
+| spring_card | spring(1, 80, 10) | 卡片按压反馈 |
+
+---
+
+**资源文件片段:**
+
+\`\`\`json
+// color.json
+{
+  "color": [
+    { "name": "brand_primary", "value": "#00BFFF" }
+  ]
+}
+\`\`\`
+
+需要我将这些 Token 写入当前项目吗？
+```
+
+### 示例对话
+
+```
+用户: 看一下这个原型图 https://stitch.withgoogle.com/projects/xxx
+
+AI: [导航到链接]
+    [等待加载]
+    [截取屏幕截图分析]
+
+    我已分析完原型图，这是一个 "babyTime" 母婴应用，包含 17 个 Screen。
+
+    ## 🎨 提取的设计 Token
+
+    ### 色彩系统
+    | 名称 | 值 | 用途 |
+    |-----|-----|------|
+    | brand_mint | #A6E8C7 | 薄荷绿 - 换尿布模块 |
+    | brand_pink | #F9CEEE | 樱花粉 - 母乳喂养模块 |
+    ...
+
+    需要我将这些 Token 写入当前项目吗？
+```
+
+### 🚀 场景二：原型图 + 创建项目 (联动流程)
+
+当用户同时提供**原型图链接**和**创建项目请求**时，执行完整联动流程：
+
+**触发关键词:**
+- "根据这个原型图创建项目"
+- "参照这个设计创建 xxx 项目"
+- "看一下这个原型图，然后帮我创建项目"
+- "根据原型图初始化项目"
+
+**联动流程:**
+
+```
+原型图分析 → 提取 Token → 确认项目信息 → 创建项目 → 写入 Token → 验证编译
+```
+
+**详细步骤:**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Step 1: 分析原型图 (先于项目创建)                                │
+│  ─────────────────────────────────                              │
+│  • 导航到原型图链接                                              │
+│  • 遍历所有 Screen                                              │
+│  • 提取设计 Token                                               │
+│  • 从原型图推断项目名称 (如: babyTime → BabyTime)                │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Step 2: 确认项目信息                                            │
+│  ─────────────────────                                          │
+│  输出设计 Token 摘要，然后询问:                                   │
+│  1. 项目名称 [默认从原型图提取]                                   │
+│  2. SDK 版本 (必须用户提供)                                      │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Step 3: 创建项目 + 写入 Token                                   │
+│  ────────────────────────────                                   │
+│  python scripts/init_harmony_project.py <项目名> --sdk "<版本>"  │
+│                                                                  │
+│  然后将提取的 Token 合并写入:                                     │
+│  • entry/src/main/resources/base/element/color.json             │
+│  • entry/src/main/resources/base/element/float.json             │
+│  • entry/src/main/resources/dark/element/color.json             │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Step 4: 验证编译                                                │
+│  ─────────────                                                  │
+│  hvigorw assembleHap --no-daemon                                │
+│  确保资源文件格式正确                                            │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**联动示例对话:**
+
+```
+用户: 根据这个原型图创建项目 https://stitch.withgoogle.com/projects/xxx
+
+AI: [导航到原型图]
+    [分析 17 个 Screen]
+    [提取设计 Token]
+
+    我已从原型图中提取了 "babyTime (亲宝时光)" 的设计系统：
+
+    ## 🎨 设计 Token 摘要
+
+    ### 色彩系统
+    | 名称 | 亮色 | 暗色 | 用途 |
+    |-----|------|------|------|
+    | brand_mint | #A6E8C7 | - | 薄荷绿 |
+    | brand_pink | #F9CEEE | - | 樱花粉 |
+    | bg_primary | #FFFDF9 | #0A0A0A | 主背景 |
+
+    ### 圆角规范
+    | radius_aura | 24vp | Aura 风格卡片 |
+
+    ---
+
+    请确认以下信息以创建项目：
+    1. **项目名称**: BabyTime (从原型图识别)
+    2. **SDK 版本**: 请提供 (格式如 6.0.2(22))
+
+用户: 6.0.2(22)
+
+AI: 收到！正在创建项目并写入设计 Token...
+
+    [执行] python scripts/init_harmony_project.py BabyTime --sdk "6.0.2(22)"
+    [写入] color.json - 品牌色 + 深色模式
+    [写入] float.json - Aura 圆角  
+    [验证] hvigorw assembleHap --no-daemon
+
+    ✅ 项目创建成功！
+
+    📁 项目路径: ./BabyTime
+    🎨 已写入设计 Token:
+       - brand_mint (#A6E8C7), brand_pink (#F9CEEE)
+       - radius_aura: 24vp
+       - 深色模式: bg_primary → #0A0A0A
+    ✅ ArkTS 编译通过
+
+    下一步建议：
+    1. 用 DevEco Studio 打开 ./BabyTime
+    2. 需要我帮你实现首页 UI 吗？
+```
+
+### 详细规范
+
+完整的提取规则和模板请参考 `DESIGN_TOKEN_EXTRACTION.md`
+
 ## Skill Instructions
 
 When this skill is activated, you MUST:
@@ -211,6 +485,10 @@ Load these files for design intelligence:
 - `.shared/harmony-ui-ux-pro-max/KITS_CATALOG.md` - **HarmonyOS Kit 完整目录** - 60+ Kit 分类索引
 - `.shared/harmony-ui-ux-pro-max/AI_KITS_GUIDE.md` - **AI Kit 开发指南** - OCR/语音/NLP/智能体
 - `.shared/harmony-ui-ux-pro-max/INDUSTRY_PRACTICES.md` - **行业实践指南** - 17个行业开发方案
+
+### 设计导入 ⭐ NEW
+- `.shared/harmony-ui-ux-pro-max/DESIGN_TOKEN_EXTRACTION.md` - **设计 Token 提取指南** - 原型图 → 资源文件
+- `.shared/harmony-ui-ux-pro-max/CUSTOM_FONT_GUIDE.md` - **自定义字体指南** - 零闪烁全局字体注册
 
 ### 最佳实践
 - `.shared/harmony-ui-ux-pro-max/BEST_PRACTICES.md` - UI/UX best practices
@@ -402,6 +680,26 @@ Text('Welcome')
   .backgroundColor('#FFFFFF')
 ```
 
+### 4.5 Color Format: Alpha Channel ⚠️ 关键规则
+- HarmonyOS 使用 **`#AARRGGBB`** 格式（Alpha 在前）
+- **不是** CSS 的 `#RRGGBBAA` 格式！
+- Tailwind 的 `bg-white/60` 需转换为 `#99FFFFFF`
+
+```typescript
+// ✅ CORRECT - HarmonyOS format (Alpha FIRST)
+.backgroundColor('#99FFFFFF')   // 60% 透明白色
+.shadow({ color: '#40E6AC99' }) // 25% 透明品牌色
+.border({ color: '#66FFFFFF' }) // 40% 透明白色
+
+// ❌ WRONG - CSS format (Alpha LAST) - 会显示异常颜色！
+.backgroundColor('#FFFFFF99')   // 错误！
+.shadow({ color: '#E6AC9940' }) // 错误！
+```
+
+**透明度换算**: 100%=FF, 80%=CC, 65%=A6, 60%=99, 50%=80, 40%=66, 25%=40, 15%=26, 10%=1A
+
+详见 `COLOR_FORMAT_GUIDE.md`
+
 ### 5. No Emoji in Code
 - **NEVER** use emoji characters in code, comments, or string resources
 - **MUST** use system symbol icons or custom icon resources instead
@@ -417,15 +715,29 @@ Text('🍼 喂养')
 // 🍼 这是喂养模块
 ```
 
-### 6. Icon Usage: Check Before Use
-- **FIRST** check if native icon exists in `sys.symbol.*`
+### 6. Icon Usage: Check Before Use ⚠️ 强制规则
+- **FIRST** check if native icon exists in `knowledge_base/harmony_symbols.csv`
 - **IF EXISTS** use `$r('sys.symbol.xxx')` or `SymbolGlyph`
-- **IF NOT** get SVG from allsvgicons.com, save to `resources/base/media/`
+- **IF NOT EXISTS** ⛔ **必须从 allsvgicons.com 下载 SVG**，禁止替换！
+
+```
+⛔ 禁止行为：
+  - 使用不存在的图标名称
+  - 使用"相似"图标替代缺失图标
+  - 猜测图标名称
+  - 使用 emoji 作为图标
+
+✅ 正确行为：
+  1. grep 查询 harmony_symbols.csv 确认图标是否存在
+  2. 不存在时，用浏览器工具访问 allsvgicons.com 搜索
+  3. 下载 SVG 保存到 resources/base/media/ic_xxx.svg
+  4. 代码中使用 Image($r('app.media.ic_xxx'))
+```
 
 ### 7. Design Principles (设计规范)
 - **一多架构**: 必须使用 GridCol/breakpoints/layoutWeight 实现响应式
 - **视觉风格**: 高端简约，圆角 8/12/16/24vp，分层设计
-- **交互动效**: 使用 animateTo + Curve.Friction/Sharp
+- **交互动效**: 使用 `this.getUIContext().animateTo()` + Curve.Friction/Sharp (⚠️ 全局 animateTo 已废弃)
 
 ### 8. Code Best Practices (代码质量)
 - **禁止 px**: 使用 vp/fp 单位
@@ -820,8 +1132,9 @@ export struct WaitingForTapView {
   
   aboutToAppear(): void {
     // 启动脉冲动画
+    // 使用 getUIContext().animateTo() 替代废弃的全局 animateTo
     setInterval(() => {
-      animateTo({ duration: 1000, curve: Curve.EaseInOut }, () => {
+      this.getUIContext().animateTo({ duration: 1000, curve: Curve.EaseInOut }, () => {
         this.animationScale = this.animationScale === 1 ? 1.2 : 1
       })
     }, 2000)

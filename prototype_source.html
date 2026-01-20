@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>babyTime - 首页</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#e6ac99",
+                        "primary-dark": "#d08e7a",
+                        "background-light": "#fbfaf9",
+                        "background-dark": "#16181d",
+                        "glass-border": "rgba(255, 255, 255, 0.4)",
+                        "glass-surface": "rgba(255, 255, 255, 0.65)",
+                        "glass-surface-dark": "rgba(30, 32, 38, 0.7)",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "1.5rem", "xl": "2rem", "2xl": "2.5rem", "full": "9999px"},
+                    boxShadow: {
+                        "aura": "0 20px 40px -10px rgba(230, 172, 153, 0.25)",
+                        "aura-sm": "0 8px 16px -4px rgba(230, 172, 153, 0.15)",
+                        "inner-light": "inset 0 1px 0 0 rgba(255, 255, 255, 0.6)",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        @keyframes breathe {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(230, 172, 153, 0.4); transform: scale(1); }
+            50% { box-shadow: 0 0 0 12px rgba(230, 172, 153, 0); transform: scale(1.02); }
+        }
+        .animate-breathe {
+            animation: breathe 4s ease-in-out infinite;
+        }
+        .glass-panel {
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-[#191210] dark:text-[#fbf9f9] font-display selection:bg-primary/30">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden pb-32">
+<div class="fixed top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/10 blur-[100px] pointer-events-none z-0"></div>
+<div class="fixed top-[20%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-200/10 dark:bg-blue-900/10 blur-[100px] pointer-events-none z-0"></div>
+<header class="relative z-10 px-6 pt-12 pb-4 flex items-center justify-between">
+<div class="flex flex-col">
+<p class="text-sm font-semibold text-gray-500 dark:text-gray-400 tracking-wide uppercase">下午好</p>
+<h1 class="text-2xl font-bold text-[#191210] dark:text-white leading-tight">妈妈</h1>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center justify-center w-12 h-12 rounded-full bg-white/50 dark:bg-white/10 glass-panel border border-glass-border shadow-sm text-[#191210] dark:text-white transition active:scale-95">
+<span class="material-symbols-outlined text-[24px]">notifications</span>
+</button>
+<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white dark:border-gray-700 shadow-sm relative">
+<div class="w-full h-full bg-cover bg-center" data-alt="Profile picture of a smiling mother" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBRZzgvCc3ttse724pZEjZSTVHWr03xenAJ5s_fXL80X80qz0C-TDnRDvouUrHihYylQ3atBWTMEZB8Bb79M0-DoXPFy0129fVNBf0uk9cDVdfxC1j-hN90ekDOGlh-ShjZeSIVxzCVBNlkGEZi9IYsQt2lr-nErS9eCeoUvTZEn2__2yHvRQjr8mAarZE83ZrOe9tIQgOFNTrKWNjZ02kBr1gypF5PqWRS68epglK-Ho6Tc9B2BNLa0Ij3LdXXNlcAXUmSw6-fSQo');">
+</div>
+</div>
+</div>
+</header>
+<section class="relative z-10 px-6 mt-2 mb-8">
+<div class="relative w-full rounded-2xl p-6 bg-glass-surface dark:bg-glass-surface-dark glass-panel border border-white/50 dark:border-white/10 shadow-aura overflow-hidden group">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
+<div class="relative flex items-center gap-6 z-10">
+<div class="relative shrink-0">
+<div class="w-20 h-20 rounded-full bg-gray-200 animate-breathe relative z-10 border-4 border-white dark:border-gray-600 shadow-sm overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="Close up of a cute sleeping baby" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCcFgZKGpFsfnm8BDT0vx4czD8-P5DfPO6d2KfkAFBqksyIXuq2KROtbKMOwcfDJ7mpQgwya0KUoRxesOQrCi60BewjD-Kt963Ts3h1yQXsndRZKFqZ9LG8s42eHp-pfXRQebgv-NJKu_Bkicz16V4tP5Sx42aku8s6NdgNNhKjtWvftio0Ja4hJq1LQ8-8fAey-TYNdeZx37lW6NS08N4X0a4OGFNZNWpw0LT70p1zakd8XLFCjdLD1CJg1kBDZ0pIAsrntpHXqDo');">
+</div>
+</div>
+<div class="absolute -bottom-1 -right-1 z-20 bg-white dark:bg-gray-800 rounded-full p-1.5 shadow-md flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[18px]">bedtime</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 dark:bg-primary/20 text-primary-dark dark:text-primary text-xs font-bold uppercase tracking-wider w-fit">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                            正在睡觉
+                        </span>
+<h2 class="text-4xl font-extrabold text-[#191210] dark:text-white tracking-tight tabular-nums">1<span class="text-xl align-top pt-1 text-gray-400 dark:text-gray-500 font-bold ml-0.5">h</span> 20<span class="text-xl align-top pt-1 text-gray-400 dark:text-gray-500 font-bold ml-0.5">m</span></h2>
+<p class="text-sm text-gray-500 dark:text-gray-400 font-medium">开始于 下午 2:30</p>
+</div>
+</div>
+</div>
+</section>
+<main class="relative z-10 px-6 flex flex-col gap-6">
+<div class="grid grid-cols-2 gap-4">
+<button class="relative group flex flex-col p-5 rounded-xl bg-white/60 dark:bg-gray-800/60 glass-panel border border-white/40 dark:border-white/5 shadow-aura-sm transition-transform active:scale-[0.98]">
+<div class="absolute inset-0 rounded-xl bg-gradient-to-br from-orange-50/50 to-transparent dark:from-orange-900/10 opacity-100 transition-opacity"></div>
+<div class="relative z-10 flex justify-between items-start w-full mb-3">
+<div class="p-3 bg-orange-100 dark:bg-orange-900/40 rounded-full text-orange-600 dark:text-orange-300">
+<span class="material-symbols-outlined text-[28px]">breastfeeding</span>
+</div>
+<span class="material-symbols-outlined text-gray-300 dark:text-gray-600">arrow_outward</span>
+</div>
+<div class="relative z-10 text-left">
+<h3 class="font-bold text-lg text-gray-900 dark:text-gray-100">喂奶计时</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">上次: 2小时前</p>
+</div>
+</button>
+<button class="relative group flex flex-col p-5 rounded-xl bg-white/60 dark:bg-gray-800/60 glass-panel border border-white/40 dark:border-white/5 shadow-aura-sm transition-transform active:scale-[0.98]">
+<div class="absolute inset-0 rounded-xl bg-gradient-to-br from-yellow-50/50 to-transparent dark:from-yellow-900/10 opacity-100"></div>
+<div class="relative z-10 flex justify-between items-start w-full mb-3">
+<div class="p-3 bg-yellow-100 dark:bg-yellow-900/40 rounded-full text-yellow-600 dark:text-yellow-300">
+<span class="material-symbols-outlined text-[28px]">restaurant</span>
+</div>
+</div>
+<div class="relative z-10 text-left">
+<h3 class="font-bold text-lg text-gray-900 dark:text-gray-100">瓶喂/辅食</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">添加喂食</p>
+</div>
+</button>
+<button class="relative group flex flex-col p-5 rounded-xl bg-white/60 dark:bg-gray-800/60 glass-panel border border-white/40 dark:border-white/5 shadow-aura-sm transition-transform active:scale-[0.98]">
+<div class="absolute inset-0 rounded-xl bg-gradient-to-br from-teal-50/50 to-transparent dark:from-teal-900/10 opacity-100"></div>
+<div class="relative z-10 flex justify-between items-start w-full mb-3">
+<div class="p-3 bg-teal-100 dark:bg-teal-900/40 rounded-full text-teal-600 dark:text-teal-300">
+<span class="material-symbols-outlined text-[28px]">baby_changing_station</span>
+</div>
+</div>
+<div class="relative z-10 text-left">
+<h3 class="font-bold text-lg text-gray-900 dark:text-gray-100">换尿布</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">今天共: 4次</p>
+</div>
+</button>
+<button class="relative group flex flex-col p-5 rounded-xl bg-white/60 dark:bg-gray-800/60 glass-panel border border-white/40 dark:border-white/5 shadow-aura-sm transition-transform active:scale-[0.98]">
+<div class="absolute inset-0 rounded-xl bg-gradient-to-br from-indigo-50/50 to-transparent dark:from-indigo-900/10 opacity-100"></div>
+<div class="relative z-10 flex justify-between items-start w-full mb-3">
+<div class="p-3 bg-indigo-100 dark:bg-indigo-900/40 rounded-full text-indigo-600 dark:text-indigo-300">
+<span class="material-symbols-outlined text-[28px]">bedtime</span>
+</div>
+</div>
+<div class="relative z-10 text-left">
+<h3 class="font-bold text-lg text-gray-900 dark:text-gray-100">睡眠追踪</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">正在记录...</p>
+</div>
+</button>
+<button class="relative group flex flex-col p-5 rounded-xl bg-white/60 dark:bg-gray-800/60 glass-panel border border-white/40 dark:border-white/5 shadow-aura-sm transition-transform active:scale-[0.98]">
+<div class="absolute inset-0 rounded-xl bg-gradient-to-br from-purple-50/50 to-transparent dark:from-purple-900/10 opacity-100"></div>
+<div class="relative z-10 flex justify-between items-start w-full mb-3">
+<div class="p-3 bg-purple-100 dark:bg-purple-900/40 rounded-full text-purple-600 dark:text-purple-300">
+<span class="material-symbols-outlined text-[28px]">straighten</span>
+</div>
+</div>
+<div class="relative z-10 text-left">
+<h3 class="font-bold text-lg text-gray-900 dark:text-gray-100">身体数据</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">6.8 kg • 62 cm</p>
+</div>
+</button>
+<button class="relative group flex flex-col p-5 rounded-xl bg-white/60 dark:bg-gray-800/60 glass-panel border border-white/40 dark:border-white/5 shadow-aura-sm transition-transform active:scale-[0.98]">
+<div class="absolute inset-0 rounded-xl bg-gradient-to-br from-red-50/50 to-transparent dark:from-red-900/10 opacity-100"></div>
+<div class="relative z-10 flex justify-between items-start w-full mb-3">
+<div class="p-3 bg-red-100 dark:bg-red-900/40 rounded-full text-red-600 dark:text-red-300">
+<span class="material-symbols-outlined text-[28px]">vaccines</span>
+</div>
+<div class="w-2 h-2 rounded-full bg-red-500 absolute top-0 right-0"></div>
+</div>
+<div class="relative z-10 text-left">
+<h3 class="font-bold text-lg text-gray-900 dark:text-gray-100">疫苗用药</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">有待办事项</p>
+</div>
+</button>
+</div>
+<div class="mt-4">
+<div class="flex items-center justify-between mb-3 px-1">
+<h2 class="text-lg font-bold text-[#191210] dark:text-white">Family Sync</h2>
+<button class="text-primary text-sm font-semibold">管理</button>
+</div>
+<div class="flex items-center gap-4 bg-white/40 dark:bg-gray-800/40 rounded-full p-3 pr-6 border border-white/50 dark:border-white/5 backdrop-blur-sm">
+<div class="flex -space-x-3">
+<div class="relative w-10 h-10 rounded-full border-2 border-white dark:border-gray-800 bg-gray-200">
+<div class="w-full h-full rounded-full bg-cover bg-center" data-alt="Profile picture of father" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC_WxzOubcfCL5alquokw8oGlGDdE09IChvcm9d2guK42B4iaxKIxjGdQLgGnuYCXQpjWQXEyi13qtVt4f-NyjITbp176khxyyzPTOM4XoWEz_3Q7OK23GMhaE5JURjou8ZcwlF6SIvjsFgbDrjBH6OmrHXFNoG0vb1MCcGN0BKcvd5sfnNlrKZBFsH2Xu-kdo-u23SbYBN08yEqvmziyD4IBFBh1vuVQ4lV4e97syrpY1MqimWxGPWtnm1lqFrLARdl4WQB5H4Q2M');">
+</div>
+<div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div>
+</div>
+<div class="relative w-10 h-10 rounded-full border-2 border-white dark:border-gray-800 bg-gray-200">
+<div class="w-full h-full rounded-full bg-cover bg-center" data-alt="Profile picture of grandmother" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBEYQQ8PCX9SIgI8b3xAjmHokMddSz3sgTu9lXuJeUSGSGcEqmjgfAEBgxMeAKMr6xtXQMeTRAnUGAr0rnPh-6L342LBjJFCkyOQz9kSADv-t6BBLftXt1VUYqjBBKaNEbQmq_BK4xF9WW50gR9Ie1NcpnLCphZNhTdg6hGbi94_nH65hmVh0luYoxNvvmvvg78ZT1PufzB78vFziS6neZZmIf1j1rY2Ho_438JXvFzsy09HCQOpMnoE1Hf5rz-jv7SY4ddeD3YhI4');">
+</div>
+</div>
+<button class="w-10 h-10 rounded-full border-2 border-dashed border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-gray-700/50 flex items-center justify-center text-gray-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+<p class="text-sm text-gray-600 dark:text-gray-300 font-medium">爸爸在线</p>
+</div>
+</div>
+</main>
+<div class="fixed bottom-28 right-6 z-50">
+<button class="w-14 h-14 rounded-full bg-primary text-white shadow-lg shadow-primary/40 flex items-center justify-center hover:scale-105 transition-transform active:scale-95">
+<span class="material-symbols-outlined text-[28px]">edit</span>
+</button>
+</div>
+<nav class="fixed bottom-0 left-0 w-full z-40 px-6 pb-6 pt-2">
+<div class="w-full h-20 rounded-[2rem] glass-panel bg-white/70 dark:bg-gray-900/80 border border-white/50 dark:border-white/10 shadow-aura-sm flex items-center justify-around px-2">
+<button class="flex flex-col items-center justify-center gap-0.5 w-16 h-full text-primary">
+<span class="material-symbols-outlined text-[26px] !fill-1">home</span>
+<span class="text-[10px] font-bold">首页</span>
+<div class="w-1 h-1 rounded-full bg-primary mt-0.5"></div>
+</button>
+<button class="flex flex-col items-center justify-center gap-0.5 w-16 h-full text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+<span class="material-symbols-outlined text-[26px]">calendar_today</span>
+<span class="text-[10px] font-medium">日历</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-0.5 w-16 h-full text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+<span class="material-symbols-outlined text-[26px]">groups</span>
+<span class="text-[10px] font-medium">家庭</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-0.5 w-16 h-full text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+<span class="material-symbols-outlined text-[26px]">query_stats</span>
+<span class="text-[10px] font-medium">分析</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-0.5 w-16 h-full text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+<span class="material-symbols-outlined text-[26px]">person</span>
+<span class="text-[10px] font-medium">我的</span>
+</button>
+</div>
+</nav>
+</div>
+
+</body></html>

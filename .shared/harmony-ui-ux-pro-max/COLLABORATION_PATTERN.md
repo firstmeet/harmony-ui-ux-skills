@@ -1159,10 +1159,11 @@ export struct WaitingForTapView {
     this.startPulseAnimation()
   }
 
+  // 使用 getUIContext().animateTo() 替代废弃的全局 animateTo
   private startPulseAnimation(): void {
     // 脉冲动画循环
     setInterval(() => {
-      animateTo({
+      this.getUIContext().animateTo({
         duration: 1000,
         curve: Curve.EaseInOut,
         iterations: -1,

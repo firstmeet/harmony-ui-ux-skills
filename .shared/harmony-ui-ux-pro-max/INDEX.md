@@ -18,6 +18,7 @@ Step 1: 识别关键词 → Step 2: 检索本地库 → Step 3: 禁止脑补 →
 
 | 关键词 | 必读文档 |
 |--------|---------|
+| 自定义字体、品牌字体 | CUSTOM_FONT_GUIDE.md |
 | 实况窗、Live View | LIVE_VIEW_GUIDE.md |
 | 一多、响应式 | RESPONSIVE_STRATEGY.md |
 | 元服务、卡片 | ATOMIC_SERVICE_GUIDE.md |
@@ -29,6 +30,10 @@ Step 1: 识别关键词 → Step 2: 检索本地库 → Step 3: 禁止脑补 →
 | 登录、支付、推送 | KITS_CATALOG.md |
 | AI、语音、OCR | AI_KITS_GUIDE.md |
 | 电商、外卖、办公 | INDUSTRY_PRACTICES.md |
+| **原型图链接** | DESIGN_TOKEN_EXTRACTION.md |
+| **原型图源码、HTML/CSS** | PROTOTYPE_SOURCE_ANALYSIS.md |
+| **透明度颜色、alpha** | COLOR_FORMAT_GUIDE.md |
+| **Tailwind 转换** | COLOR_FORMAT_GUIDE.md |
 
 ### 输出格式
 
@@ -75,6 +80,14 @@ Step 1: 识别关键词 → Step 2: 检索本地库 → Step 3: 禁止脑补 →
 | [AI_KITS_GUIDE.md](./AI_KITS_GUIDE.md) | **AI Kit 开发指南** - OCR/语音/NLP/智能体 |
 | [INDUSTRY_PRACTICES.md](./INDUSTRY_PRACTICES.md) | **行业实践指南** - 17个行业开发方案 |
 
+### 设计导入 ⭐ NEW
+| File | Description |
+|------|-------------|
+| [DESIGN_TOKEN_EXTRACTION.md](./DESIGN_TOKEN_EXTRACTION.md) | **设计 Token 提取指南** - 原型图 → 资源文件 |
+| [CUSTOM_FONT_GUIDE.md](./CUSTOM_FONT_GUIDE.md) | **自定义字体指南** - 零闪烁全局字体注册 |
+| [COLOR_FORMAT_GUIDE.md](./COLOR_FORMAT_GUIDE.md) | **颜色格式指南** - `#AARRGGBB` 透明度转换 |
+| [PROTOTYPE_SOURCE_ANALYSIS.md](./PROTOTYPE_SOURCE_ANALYSIS.md) | **原型图源码分析** - HTML/CSS/Tailwind 提取 |
+
 ### 高级功能
 | File | Description |
 |------|-------------|
@@ -92,12 +105,18 @@ Step 1: 识别关键词 → Step 2: 检索本地库 → Step 3: 禁止脑补 →
 3. **State Management**: @State, @Prop, @Link, @Provide/@Consume, @Observed/@ObjectLink
 4. **Resources**: NO hardcoded colors/strings - use `$r('app.color.xxx')`, `$r('app.string.xxx')`
 5. **No Emoji**: NO emoji in code/comments - use icon resources instead
-6. **Icon Check**: 先检查原生图标是否存在，不存在则从 allsvgicons.com 获取 SVG
+6. **Icon Check ⚠️**: 先查询 `harmony_symbols.csv` 确认图标是否存在，**不存在必须从 allsvgicons.com 下载 SVG，禁止替换！**
+
+### 颜色格式 ⚠️ 关键规则
+7. **Alpha 格式**: HarmonyOS 使用 `#AARRGGBB` (Alpha 在前)，**不是** CSS 的 `#RRGGBBAA`！
+   - ✅ 正确: `#99FFFFFF` (60% 透明白色)
+   - ❌ 错误: `#FFFFFF99` (会显示异常颜色)
+8. **Tailwind 转换**: `bg-white/60` → `#99FFFFFF`，详见 `COLOR_FORMAT_GUIDE.md`
 
 ### 设计规范 (Rule 7)
 7. **一多架构**: 必须使用 GridCol/breakpoints/layoutWeight 实现响应式布局
 8. **视觉风格**: 高端简约，圆角 8/12/16/24vp，分层设计，适当留白
-9. **交互动效**: 使用 animateTo/animation，曲线 Curve.Friction/Sharp
+9. **交互动效**: 使用 `this.getUIContext().animateTo()`/animation，曲线 Curve.Friction/Sharp
 
 ### 代码质量 (Rule 8)
 10. **禁止 px**: 必须使用 vp/fp 单位
@@ -148,6 +167,19 @@ Step 1: 识别关键词 → Step 2: 检索本地库 → Step 3: 禁止脑补 →
 
 ### 脚本验证 (Rule 19)
 35. **闭环检查**: 项目创建时检查脚本存在性，编译失败自动修复
+
+### 原型图导入 (Rule 16) ⭐ NEW
+36. **触发识别**: 用户提供原型图链接时自动触发 Token 提取流程
+37. **完整提取**: 色彩/字体/间距/圆角/动效 Token 全量提取
+38. **资源输出**: 必须输出 color.json / float.json / dark/color.json 片段
+39. **写入确认**: 询问用户是否将 Token 写入当前项目
+40. **联动创建**: 支持"原型图 → 创建项目 → 写入 Token"完整流程
+
+### 自定义字体 (Rule 17) ⭐ NEW
+41. **注册时机**: 在 EntryAbility.onWindowStageCreate 中、loadContent 之前注册
+42. **资源引用**: 使用 $r('app.media.xxx') 引用字体，禁止硬编码路径
+43. **异常处理**: 必须包含 try-catch 逻辑
+44. **零闪烁**: 确保字体在 UI 渲染前完成加载
 
 ## Quick Reference
 

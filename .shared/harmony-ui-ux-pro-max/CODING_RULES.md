@@ -360,6 +360,58 @@ struct WrongExample {
 
 ---
 
+## ⚠️ Color Format - Alpha Channel (透明度颜色格式)
+
+### HarmonyOS 使用 `#AARRGGBB` 格式！
+
+**这是最常见的错误**：HarmonyOS 的透明度颜色格式与 CSS 完全不同！
+
+| 平台 | 格式 | 60% 透明白色 |
+|------|------|--------------|
+| **HarmonyOS** | `#AARRGGBB` | `#99FFFFFF` ✅ |
+| CSS | `#RRGGBBAA` | `#FFFFFF99` ❌ |
+| Tailwind | `bg-white/60` | 需转换为 `#99FFFFFF` |
+
+### 透明度换算
+
+| 透明度 | Alpha Hex | 示例 (白色) |
+|--------|-----------|-------------|
+| 100% | FF | `#FFFFFFFF` |
+| 80% | CC | `#CCFFFFFF` |
+| 65% | A6 | `#A6FFFFFF` |
+| 60% | 99 | `#99FFFFFF` |
+| 50% | 80 | `#80FFFFFF` |
+| 40% | 66 | `#66FFFFFF` |
+| 25% | 40 | `#40FFFFFF` |
+| 15% | 26 | `#26FFFFFF` |
+| 10% | 1A | `#1AFFFFFF` |
+
+### 示例
+
+```json
+// color.json - 正确格式
+{
+  "color": [
+    { "name": "bg_glass", "value": "#A6FFFFFF" },     // ✅ 65% 透明白色
+    { "name": "overlay", "value": "#66000000" },      // ✅ 40% 透明黑色
+    { "name": "shadow_aura", "value": "#40E6AC99" }   // ✅ 25% 透明品牌色
+  ]
+}
+```
+
+```typescript
+// 代码中的硬编码颜色也必须使用正确格式
+.backgroundColor('#66FFFFFF')    // ✅ 40% 透明白色
+.shadow({ color: '#26E6AC99' })  // ✅ 15% 透明阴影
+.border({ color: '#80FFFFFF' })  // ✅ 50% 透明边框
+```
+
+### 详细规范
+
+完整的颜色格式转换指南请参考 `COLOR_FORMAT_GUIDE.md`
+
+---
+
 ## Dark Mode Support
 
 ### Requirements
@@ -414,15 +466,51 @@ let feeding🍼Count = 0    // FORBIDDEN
 
 ---
 
-## Rule 6: Icon Usage - Check Before Use
+## Rule 6: Icon Usage - Check Before Use ⚠️ 强制规则
 
 ### Requirements
 
 使用图标时必须遵循以下流程：
 
-1. **先检查原生图标是否存在**
-2. **存在则使用原生图标**
-3. **不存在则从 allsvgicons.com 获取 SVG 并保存到本地**
+1. **先检查原生图标是否存在** (查询 `knowledge_base/harmony_symbols.csv`)
+2. **存在则使用原生图标** (`sys.symbol.xxx`)
+3. **不存在则必须从 allsvgicons.com 下载 SVG 并保存到本地**
+
+### ⛔ 禁止行为（严格执行）
+
+```
+❌ 严禁使用"相似图标"替代缺失图标
+❌ 严禁使用不存在的图标名称（如 sys.symbol.waterbottle）
+❌ 严禁猜测图标名称
+❌ 严禁使用 emoji 作为图标替代
+```
+
+### ✅ 正确行为
+
+```
+✅ 查询 harmony_symbols.csv 确认图标是否存在
+✅ 不存在时，使用浏览器工具访问 allsvgicons.com 搜索
+✅ 下载 SVG 文件保存到 resources/base/media/
+✅ 使用 Image($r('app.media.ic_xxx')) 引用本地 SVG
+```
+
+### 违规示例
+
+```typescript
+// ❌ 错误：使用不存在的图标名称
+SymbolGlyph($r('sys.symbol.waterbottle'))  // 该图标不存在！
+SymbolGlyph($r('sys.symbol.diaper'))       // 该图标不存在！
+SymbolGlyph($r('sys.symbol.ruler'))        // 该图标不存在！
+
+// ❌ 错误：使用"相似"图标替代
+// 需要奶瓶图标，但用了水杯图标
+SymbolGlyph($r('sys.symbol.cup'))          // 禁止替代！
+
+// ✅ 正确：从 allsvgicons.com 下载 SVG
+Image($r('app.media.ic_baby_bottle'))      // 已下载到本地
+Image($r('app.media.ic_diaper'))           // 已下载到本地
+Image($r('app.media.ic_ruler'))            // 已下载到本地
+```
 
 ### Step 1: 检查原生图标是否存在
 
@@ -455,19 +543,26 @@ SymbolGlyph($r('sys.symbol.heart'))
   .fontColor([$r('app.color.primary')])
 ```
 
-### Step 3: 获取替代图标（如果原生不存在）
+### Step 3: 下载 SVG 图标（如果原生不存在）⚠️ 强制执行
 
-**从 allsvgicons.com 获取：**
+**⛔ 禁止行为：**
+- 不能使用"相似"的系统图标替代（如用 cup 替代 bottle）
+- 不能猜测图标名称
+- 不能跳过此步骤直接使用不存在的图标
 
-1. 访问 https://allsvgicons.com/
-2. 搜索需要的图标（如 "cart", "wallet", "coupon"）
+**✅ 必须从 allsvgicons.com 获取：**
+
+1. 使用浏览器工具访问 https://allsvgicons.com/search/?q=关键词
+2. 搜索需要的图标（如 "baby bottle", "diaper", "ruler"）
 3. 推荐图标库（风格统一、质量高）：
+   - **Material Design Icons** (7447 icons) - Google 风格，mdi:xxx
    - **Material Symbols** (15009 icons) - Google 风格
    - **Phosphor** (9072 icons) - 简洁现代
    - **Tabler Icons** (5963 icons) - 线条风格
    - **Lucide** (1641 icons) - Feather 改进版
    - **HeroIcons** (1288 icons) - Tailwind 风格
-4. 选择 SVG 格式下载
+4. 点击图标，在弹窗中复制 SVG 代码
+5. 保存到项目 `resources/base/media/ic_xxx.svg`
 
 ### Step 4: 保存 SVG 到项目
 
@@ -668,15 +763,17 @@ Column({ space: 24 }) { }  // 宽松
 
 **动效必须自然流畅**，使用系统推荐的动画曲线。
 
+⚠️ **重要：API 12+ 必须使用 `this.getUIContext().animateTo()` 替代废弃的全局 `animateTo()`**
+
 ```typescript
-// ✅ 推荐动画方式一：animateTo（状态驱动）
+// ✅ 推荐动画方式一：getUIContext().animateTo（状态驱动，API 12+）
 @State isExpanded: boolean = false
 
 build() {
   Column()
     .height(this.isExpanded ? 200 : 80)
     .onClick(() => {
-      animateTo({
+      this.getUIContext().animateTo({
         duration: 300,
         curve: Curve.Friction,  // 摩擦曲线 - 自然减速
         onFinish: () => { }
@@ -833,55 +930,97 @@ struct ButtonDemo {
 }
 ```
 
-### 8.4 推荐使用 Navigation 组件
+### 8.4 强制使用 Navigation 组件 ⚠️
 
-**使用 Navigation 而非旧版 Router API**
+**必须使用 Navigation 架构，严禁使用 router.pushUrl**
+
+> 📚 详细规范请参考 `NAVIGATION_ARCHITECTURE_GUIDE.md`
+
+#### 核心要求
+
+1. **主页必须 `@Provide('pageStack')`** - 初始化并提供路由栈
+2. **子组件/子页面必须 `@Consume('pageStack')`** - Key 必须完全一致
+3. **目标页面必须用 `NavDestination` 包裹**
+4. **严禁混用 `router.pushUrl`**
 
 ```typescript
-// ✅ CORRECT - 使用 Navigation 组件
+// ✅ CORRECT - Navigation 架构
 @Entry
 @Component
-struct MainPage {
-  @Provide('navStack') navStack: NavPathStack = new NavPathStack()
+struct Index {
+  // 1. 主页提供路由栈
+  @Provide('pageStack') pageStack: NavPathStack = new NavPathStack()
 
   build() {
-    Navigation(this.navStack) {
-      // 首页内容
+    // 2. 绑定路由栈
+    Navigation(this.pageStack) {
       HomePage()
     }
-    .navDestination(this.pageBuilder)
+    .navDestination(this.PageMap)
     .mode(NavigationMode.Stack)
+    .hideTitleBar(true)
   }
 
+  // 3. 路由映射表
   @Builder
-  pageBuilder(name: string, param: object) {
-    if (name === 'detail') {
-      DetailPage({ data: param as DetailData })
-    } else if (name === 'settings') {
-      SettingsPage()
+  PageMap(name: string) {
+    if (name === 'DetailPage') {
+      DetailPage()
     }
   }
 }
 
-// 子页面导航
+// 子组件中跳转
 @Component
 struct HomePage {
-  @Consume('navStack') navStack: NavPathStack
+  // 4. 使用 @Consume 获取路由栈 (key 必须一致!)
+  @Consume('pageStack') pageStack: NavPathStack
 
   build() {
     Column() {
       Button('查看详情')
         .onClick(() => {
-          this.navStack.pushPathByName('detail', { id: 123 })
+          // 5. 使用 pushPath 跳转
+          this.pageStack.pushPath({ name: 'DetailPage', param: { id: 123 } })
         })
     }
   }
 }
 
-// ❌ AVOID - 旧版 Router API
+// 目标页面
+@Component
+struct DetailPage {
+  @Consume('pageStack') pageStack: NavPathStack
+
+  build() {
+    // 6. 必须使用 NavDestination 包裹
+    NavDestination() {
+      Column() {
+        Text('详情页')
+        Button('返回')
+          .onClick(() => this.pageStack.pop())
+      }
+    }
+    .title('详情')
+    .onBackPressed(() => {
+      this.pageStack.pop()
+      return true
+    })
+  }
+}
+
+// ❌ FORBIDDEN - 旧版 Router API
 import router from '@ohos.router'
-router.pushUrl({ url: 'pages/Detail' })  // 不推荐
+router.pushUrl({ url: 'pages/Detail' })  // 严禁使用！
 ```
+
+#### 常见错误排查
+
+| 问题 | 原因 | 解决方案 |
+|------|------|---------|
+| 子页面空白 | @Consume key 不匹配 | 确保使用相同的 key (如 'pageStack') |
+| 跳转无反应 | 未绑定路由栈 | 检查 Navigation(this.pageStack) |
+| 无法返回 | 未处理 onBackPressed | 添加 .onBackPressed() 回调 |
 
 ---
 
@@ -1593,6 +1732,267 @@ controller.show(getContext(this))
 
 ---
 
+## Rule 16: Prototype Import - 原型图导入
+
+### 触发条件
+
+当用户提供原型图链接或截图时，自动触发设计 Token 提取流程：
+
+| 触发方式 | 示例 |
+|---------|------|
+| **Google Stitch** | `https://stitch.withgoogle.com/projects/xxx` |
+| **Figma** | `https://www.figma.com/file/xxx` |
+| **MasterGo** | `https://mastergo.com/files/xxx` |
+| **设计截图** | 用户上传的设计规范图片 |
+| **联动创建** | "根据这个原型图创建项目" / "参照设计创建 xxx 项目" |
+
+### 两种模式
+
+**模式一：仅提取 Token (已有项目)**
+- 用户已有项目，只需提取设计 Token
+- 询问是否写入现有项目
+
+**模式二：联动创建项目 (推荐)**
+- 用户提供原型图 + 要求创建项目
+- 执行完整流程: 分析原型图 → 提取 Token → 创建项目 → 写入 Token → 验证编译
+
+### 执行流程
+
+```
+步骤1: 访问原型图
+       使用浏览器工具导航到链接
+       等待完全加载 (3秒+)
+       
+步骤2: 遍历所有 Screen
+       识别设计系统页面 (Design System / UI Kit)
+       截取关键页面截图
+       
+步骤3: 提取设计 Token
+       - 色彩系统 (Color Palette)
+       - 字体规范 (Typography)
+       - 间距规范 (Spacing)
+       - 圆角规范 (Border Radius)
+       - 动效参数 (Motion/Animation)
+       - 阴影规范 (Shadows)
+       
+步骤4: 生成资源文件
+       输出 color.json / float.json 片段
+       输出 dark/color.json (深色模式)
+       可选: 生成 design-system/tokens.ets
+       
+步骤5: 写入项目
+       合并到现有资源文件
+       记录设计来源
+```
+
+### 输出要求
+
+提取完成后必须输出：
+
+**1. 设计摘要表格**
+
+```markdown
+| 类型 | Token 名称 | 值 | 用途 |
+|-----|-----------|-----|------|
+| 颜色 | brand_primary | #00BFFF | 主品牌色 |
+| 圆角 | radius_aura | 24vp | Aura 风格卡片 |
+```
+
+**2. 资源文件代码块**
+
+```json
+// color.json 片段
+{
+  "color": [
+    { "name": "brand_primary", "value": "#00BFFF" },
+    { "name": "brand_accent", "value": "#FF6B6B" }
+  ]
+}
+```
+
+**3. 深色模式资源**
+
+如原型图有深色模式规范，同步提取：
+
+```json
+// dark/color.json 片段
+{
+  "color": [
+    { "name": "bg_primary", "value": "#0A0A0A" },
+    { "name": "brand_primary", "value": "#00D4FF" }
+  ]
+}
+```
+
+### Token 命名规范
+
+从原型图提取的 Token 遵循以下命名：
+
+| 类型 | 格式 | 示例 |
+|-----|------|------|
+| 品牌色 | `brand_xxx` | `brand_primary`, `brand_accent` |
+| 功能色 | 语义化名称 | `success`, `warning`, `error` |
+| 背景色 | `bg_xxx` | `bg_primary`, `bg_card` |
+| 文字色 | `text_xxx` | `text_primary`, `text_secondary` |
+| 项目专属 | `项目名_xxx` | `babytime_mint_green` |
+
+### 冲突处理
+
+当提取的 Token 与现有项目冲突时：
+
+```
+情况1: 新 Token 与现有名称不同
+       → 直接添加到资源文件
+
+情况2: 名称冲突但值不同
+       → 询问用户是否覆盖
+
+情况3: 完全相同
+       → 跳过，无需重复添加
+```
+
+### 示例对话 - 模式一 (仅提取)
+
+```
+用户: 看一下这个原型图 https://stitch.withgoogle.com/xxx
+
+AI: [访问链接，截图分析]
+
+已从原型图中提取 babyTime 设计 Token：
+
+| 类型 | Token | 值 | 说明 |
+|-----|-------|-----|------|
+| 品牌色 | brand_primary | #00BFFF | 天蓝色主色 |
+| 圆角 | radius_aura | 24vp | Aura 风格 |
+| 动效 | motion_spring | spring(1,80,10) | 卡片反馈 |
+
+需要我将这些 Token 写入当前项目吗？
+```
+
+### 示例对话 - 模式二 (联动创建)
+
+```
+用户: 根据这个原型图创建项目 https://stitch.withgoogle.com/xxx
+
+AI: [分析原型图，提取设计 Token]
+
+我已从原型图提取了 "babyTime" 设计系统：
+- 品牌色: #A6E8C7, #F9CEEE, #C7E0F4
+- Aura 圆角: 24vp
+- 深色模式: #0A0A0A 背景
+
+请确认：
+1. 项目名称: BabyTime (从原型图识别)
+2. SDK 版本: 请提供 (格式如 6.0.2(22))
+
+用户: 6.0.2(22)
+
+AI: [创建项目]
+    python scripts/init_harmony_project.py BabyTime --sdk "6.0.2(22)"
+    
+    [写入设计 Token]
+    color.json ← 品牌色 + 深色模式
+    float.json ← Aura 圆角
+    
+    [验证编译]
+    hvigorw assembleHap --no-daemon
+    
+    ✅ 项目创建成功！
+    📁 路径: ./BabyTime
+    🎨 设计 Token 已写入
+```
+
+### 详细规范
+
+完整的提取规则请参考 `DESIGN_TOKEN_EXTRACTION.md`
+
+---
+
+## Rule 17: Custom Font - 自定义字体注册
+
+### 核心原则
+
+自定义字体必须在 UI 渲染前完成注册，确保**零闪烁 (No FOUT)** 和**全局可用性**。
+
+### 强制规范
+
+```
+❌ 禁止：在 Page 级别 (aboutToAppear) 注册全局字体
+❌ 禁止：在 build() 方法中注册字体
+❌ 禁止：使用硬编码本地绝对路径
+
+✅ 必须：在 EntryAbility.onWindowStageCreate 中注册
+✅ 必须：在 loadContent 执行前完成注册
+✅ 必须：使用 $r('app.media.xxx') 引用字体资源
+✅ 必须：包含 try-catch 异常处理
+```
+
+### 标准实现
+
+**1. 创建 FontManager (utils/FontManager.ets)**
+
+```typescript
+import { font } from '@kit.ArkUI'
+
+export class FontManager {
+  public static registerCustomFonts(): void {
+    try {
+      font.registerFont({
+        familyName: 'BrandFont',
+        familySrc: $r('app.media.BrandFont_Regular')
+      })
+      console.info('FontManager: Custom fonts registered.')
+    } catch (error) {
+      console.error(`FontManager: Failed. Code: ${error.code}`)
+    }
+  }
+}
+```
+
+**2. 集成到 EntryAbility**
+
+```typescript
+onWindowStageCreate(windowStage: window.WindowStage): void {
+  // ⚠️ 先注册字体
+  FontManager.registerCustomFonts()
+  
+  // 再加载页面
+  windowStage.loadContent('pages/Index')
+}
+```
+
+**3. UI 中使用**
+
+```typescript
+Text('品牌文字')
+  .fontFamily('BrandFont')  // 与注册时 familyName 一致
+  .fontSize(16)
+```
+
+### 资源配置
+
+| 项目 | 规范 |
+|------|------|
+| **文件格式** | `.ttf` 或 `.otf` |
+| **存放位置** | `resources/base/media/` |
+| **命名规范** | `FontName_Weight.ttf` (如 BrandFont_Bold.ttf) |
+| **引用方式** | `$r('app.media.FontName_Weight')` |
+
+### AI 检测清单
+
+当用户请求使用自定义字体时，AI 必须检查：
+
+1. ✅ 是否在 EntryAbility 中注册？
+2. ✅ 是否使用 $r() 引用字体？
+3. ✅ 是否包含 try-catch？
+4. ✅ 字体文件是否存在于 resources/base/media/?
+
+### 详细规范
+
+完整的字体注册指南请参考 `CUSTOM_FONT_GUIDE.md`
+
+---
+
 ## Summary Checklist
 
 Before submitting any code, verify:
@@ -1622,6 +2022,7 @@ Before submitting any code, verify:
 - [ ] 响应式布局已实现（GridCol/breakpoints/layoutWeight）
 - [ ] 圆角使用标准值（8/12/16/24vp）
 - [ ] 动效使用推荐曲线（Curve.Friction/Sharp）
+- [ ] **动画使用 `this.getUIContext().animateTo()` 而非废弃的全局 `animateTo()`**
 
 **代码质量 (Rule 8)**
 - [ ] No px unit used (use vp/fp)
@@ -1664,3 +2065,16 @@ Before submitting any code, verify:
 - [ ] 已询问是否需要元服务卡片适配
 - [ ] 进度类功能已考虑实况窗
 - [ ] 扫码/分享功能优先使用系统 Kit
+
+**原型图导入 (Rule 16)**
+- [ ] 已遍历原型图所有 Screen
+- [ ] 已提取色彩/字体/间距/圆角/动效 Token
+- [ ] 已生成 color.json / float.json 资源片段
+- [ ] 已生成深色模式资源 (如适用)
+- [ ] Token 命名遵循规范 (brand_xxx, bg_xxx, text_xxx)
+
+**自定义字体 (Rule 17)**
+- [ ] 字体在 EntryAbility.onWindowStageCreate 中注册
+- [ ] 使用 $r('app.media.xxx') 引用字体资源
+- [ ] 包含 try-catch 异常处理
+- [ ] 字体文件存放于 resources/base/media/

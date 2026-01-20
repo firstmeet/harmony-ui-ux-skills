@@ -40,7 +40,7 @@
 |------|---------|---------|
 | 商品列表 | LazyForEach + 瀑布流 | WaterFlow, LazyForEach |
 | 商品详情 | 图片轮播 + 规格选择 | Swiper, BottomSheet |
-| 购物车 | 状态管理 + 动画 | @Observed, animateTo |
+| 购物车 | 状态管理 + 动画 | @Observed, getUIContext().animateTo |
 | 支付下单 | IAP Kit / Payment Kit | iap.purchase() |
 | 搜索筛选 | 联想搜索 + 标签 | Search, Chip |
 
