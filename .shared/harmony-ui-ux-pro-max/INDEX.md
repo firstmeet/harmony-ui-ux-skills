@@ -4,6 +4,35 @@
 
 An AI SKILL that provides design intelligence for building professional UI/UX for **HarmonyOS NEXT** applications.
 
+---
+
+## ⚠️ Rule 0: 知识库优先原则 (最高优先级)
+
+在生成任何代码之前，必须执行以下思考链：
+
+```
+Step 1: 识别关键词 → Step 2: 检索本地库 → Step 3: 禁止脑补 → Step 4: 引用声明
+```
+
+### 关键词 → 文档映射
+
+| 关键词 | 必读文档 |
+|--------|---------|
+| 实况窗、Live View | LIVE_VIEW_GUIDE.md |
+| 一多、响应式 | RESPONSIVE_STRATEGY.md |
+| 元服务、卡片 | ATOMIC_SERVICE_GUIDE.md |
+| 动效、动画 | ANIMATION_SYSTEM.md |
+| 列表、长列表 | PERFORMANCE_GUARD.md |
+| 分布式、跨设备 | DISTRIBUTED_SYNC.md |
+| 碰一碰、协作 | COLLABORATION_PATTERN.md |
+| 持久化、离线 | STORAGE_GUIDE.md |
+
+### 输出格式
+
+代码前必须声明: "已参考本地知识库中的 [文件名] 规范进行设计"
+
+---
+
 ## Knowledge Base Files
 
 ### 核心规范 (必读)

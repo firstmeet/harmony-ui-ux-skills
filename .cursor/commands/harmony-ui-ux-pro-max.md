@@ -4,6 +4,97 @@
 
 An AI SKILL that provides design intelligence for building professional UI/UX for **HarmonyOS NEXT** applications using **ArkUI/ArkTS**.
 
+---
+
+## ⚠️ Rule 0: Knowledge Base First (知识库优先原则)
+
+**这是最高优先级规则，在生成任何代码之前必须强制执行。**
+
+### 强制思考流程
+
+在响应用户任何 UI/UX 需求之前，你必须执行以下检索流程：
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Step 1: 识别关键词                                              │
+│  ─────────────────                                              │
+│  扫描用户需求，识别以下关键词：                                    │
+│  • 实况窗 (Live View)    → LIVE_VIEW_GUIDE.md                   │
+│  • 一多 / 响应式         → RESPONSIVE_STRATEGY.md               │
+│  • 元服务 / 卡片         → ATOMIC_SERVICE_GUIDE.md              │
+│  • 动效 / 动画           → ANIMATION_SYSTEM.md                  │
+│  • 列表 / 商品           → PERFORMANCE_GUARD.md (LazyForEach)   │
+│  • 分布式 / 跨设备       → DISTRIBUTED_SYNC.md                  │
+│  • 碰一碰 / 协作         → COLLABORATION_PATTERN.md             │
+│  • 持久化 / 离线         → STORAGE_GUIDE.md                     │
+│  • 创建项目              → 触发 Rule 10 项目创建流程              │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Step 2: 检索本地库                                              │
+│  ─────────────────                                              │
+│  你必须主动读取 `.shared/harmony-ui-ux-pro-max/` 目录下的文档：   │
+│  1. 首先读取 CODING_RULES.md (强制)                              │
+│  2. 根据识别的关键词读取对应专用文档                               │
+│  3. 检查是否有该场景的组件模板或代码片段                           │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Step 3: 禁止脑补                                                │
+│  ─────────────────                                              │
+│  ❌ 严禁直接使用大模型预训练的通用代码                             │
+│  ❌ 严禁使用过时的 HarmonyOS 2.x/3.x API                         │
+│  ✅ 如果本地知识库有相关模板，必须优先基于模板修改                   │
+│  ✅ 如果本地知识库没有，显式声明并提供符合 API 12/13 的代码         │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Step 4: 引用声明                                                │
+│  ─────────────────                                              │
+│  在输出代码前，必须简要声明：                                      │
+│  "已参考本地知识库中的 [文件名] 规范进行设计"                       │
+│                                                                  │
+│  示例：                                                          │
+│  "已参考 ANIMATION_SYSTEM.md 使用 Curve.Friction 曲线"           │
+│  "已参考 RESPONSIVE_STRATEGY.md 使用 GridCol + breakpoints"      │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 关键词映射表
+
+| 用户关键词 | 必须读取的文档 | 核心模板/规范 |
+|-----------|---------------|--------------|
+| 实况窗、Live View、进度 | `LIVE_VIEW_GUIDE.md` | LiveViewLockScreenExtensionAbility |
+| 一多、响应式、多设备 | `RESPONSIVE_STRATEGY.md` | GridRow/GridCol + breakpoints |
+| 元服务、卡片、Widget | `ATOMIC_SERVICE_GUIDE.md` | FormExtensionAbility |
+| 动效、动画、转场 | `ANIMATION_SYSTEM.md` | Curve.Friction/Sharp/Spring |
+| 列表、长列表、商品列表 | `PERFORMANCE_GUARD.md` | LazyForEach + IDataSource |
+| 分布式、跨设备、同步 | `DISTRIBUTED_SYNC.md` | DistributedDataObject |
+| 碰一碰、NFC、协作 | `COLLABORATION_PATTERN.md` | WaitingForTapView |
+| 持久化、离线、缓存 | `STORAGE_GUIDE.md` | RDB + Offline-First |
+| MVVM、架构、ViewModel | `ARCHITECTURE.md` | @ObservedV2 + @Trace |
+
+### 违规示例
+
+```
+❌ 错误行为：
+用户: "创建一个带实况窗的外卖配送页面"
+AI: 直接输出代码，未读取 LIVE_VIEW_GUIDE.md
+
+✅ 正确行为：
+用户: "创建一个带实况窗的外卖配送页面"
+AI: 
+  1. [内部] 识别关键词: "实况窗" → 需要读取 LIVE_VIEW_GUIDE.md
+  2. [内部] 读取 .shared/harmony-ui-ux-pro-max/LIVE_VIEW_GUIDE.md
+  3. [输出] "已参考 LIVE_VIEW_GUIDE.md 的实况窗模板..."
+  4. [输出] 基于模板修改的代码
+```
+
+---
+
 ## Activation
 
 This skill activates when the user requests any HarmonyOS NEXT UI/UX related work:
@@ -112,20 +203,152 @@ Load these files for design intelligence:
 ### 最佳实践
 - `.shared/harmony-ui-ux-pro-max/BEST_PRACTICES.md` - UI/UX best practices
 
-## Workflow
+## Workflow (必须执行)
+
+**重要**: 每次响应 HarmonyOS UI/UX 需求时，必须严格执行以下三步骤思考链。
+
+### Step 1: Context Retrieval (上下文检索)
+
+**必须执行**: 在编写任何代码前，先检索知识库。
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  1.1 扫描用户需求中的关键词                                       │
+│  1.2 搜索 .shared/harmony-ui-ux-pro-max/ 目录                    │
+│  1.3 确认是否有针对该场景的专用规则或模板                          │
+│                                                                  │
+│  输出格式 (必须在代码前输出):                                      │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │ **知识库检索结果**                                          │ │
+│  │ - 识别关键词: [实况窗]                                       │ │
+│  │ - 检索文档: LIVE_VIEW_GUIDE.md ✓                            │ │
+│  │ - 找到模板: LiveViewProgressCard                            │ │
+│  └────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Step 2: Architecture Plan (架构规划)
+
+**必须执行**: 先用文字描述架构，再写代码。
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  2.1 描述将使用哪些本地组件和规范                                  │
+│  2.2 如果涉及实况窗，必须说明使用了哪个 Template                    │
+│  2.3 如果涉及分布式，必须说明同步策略                              │
+│  2.4 绘制 UI 架构简图                                            │
+│                                                                  │
+│  输出格式 (必须在代码前输出):                                      │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │ **架构规划**                                                │ │
+│  │ - 使用模板: LIVE_VIEW_GUIDE.md → DeliveryLiveViewTemplate   │ │
+│  │ - 布局策略: RESPONSIVE_STRATEGY.md → sm/md 断点适配          │ │
+│  │ - 动画曲线: Curve.Friction (页面转场)                        │ │
+│  │ - 状态管理: @ObservedV2 ViewModel 模式                       │ │
+│  │                                                             │ │
+│  │ **UI 架构简图**                                              │ │
+│  │ ┌─────────────────────────────────────────┐                 │ │
+│  │ │        DeliveryLiveViewCard            │                 │ │
+│  │ ├─────────────────────────────────────────┤                 │ │
+│  │ │ ┌─────────┐  ┌────────────────────────┐│                 │ │
+│  │ │ │ 骑手头像 │  │ 配送进度 + 预计时间    ││                 │ │
+│  │ │ └─────────┘  └────────────────────────┘│                 │ │
+│  │ │ ┌─────────────────────────────────────┐│                 │ │
+│  │ │ │        进度条 (Progress)           ││                 │ │
+│  │ │ └─────────────────────────────────────┘│                 │ │
+│  │ └─────────────────────────────────────────┘                 │ │
+│  └────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Step 3: Implementation (代码实现)
+
+**必须执行**: 基于知识库模板生成代码。
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  3.1 生成 ArkTS 代码 (基于知识库模板修改)                          │
+│  3.2 同步输出资源文件 (string.json, color.json)                   │
+│  3.3 输出规范对齐说明                                             │
+│                                                                  │
+│  输出格式 (代码后必须输出):                                        │
+│  ┌────────────────────────────────────────────────────────────┐ │
+│  │ **规范对齐说明**                                             │ │
+│  │ ✓ Rule 0:  知识库优先 - 已参考 LIVE_VIEW_GUIDE.md            │ │
+│  │ ✓ Rule 1:  类型安全 - 所有变量显式类型                        │ │
+│  │ ✓ Rule 4:  资源引用 - 无硬编码颜色/字符串                     │ │
+│  │ ✓ Rule 14: 无障碍 - 已添加 accessibilityText                 │ │
+│  │ ✓ Rule 16: 同步 - 已输出 string.json/color.json              │ │
+│  └────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 完整示例
+
+```
+用户: "创建一个外卖配送实况窗页面"
+
+AI 输出:
+
+## 知识库检索结果
+- 识别关键词: [实况窗, 外卖配送]
+- 检索文档: LIVE_VIEW_GUIDE.md ✓
+- 找到模板: DeliveryProgressLiveView
+
+## 架构规划
+- 使用模板: LIVE_VIEW_GUIDE.md → DeliveryProgressLiveView
+- 布局策略: 锁屏卡片模式，固定高度 180vp
+- 动画曲线: Curve.Sharp (进度条动画)
+- 状态管理: LiveViewAbility + @Trace
+
+## UI 架构简图
+┌─────────────────────────────────────────┐
+│        DeliveryLiveViewCard            │
+├─────────────────────────────────────────┤
+│ [骑手头像] 骑手正在配送中               │
+│           预计 12:30 送达               │
+│ ════════════════════░░░░░░░░ 65%       │
+│ [电话] [位置]                           │
+└─────────────────────────────────────────┘
+
+## 代码实现
+
+[ArkTS 代码...]
+
+## 资源文件
+
+### string.json (新增)
+[JSON 片段...]
+
+### color.json (新增)  
+[JSON 片段...]
+
+## 规范对齐说明
+✓ Rule 0:  知识库优先 - 已参考 LIVE_VIEW_GUIDE.md
+✓ Rule 1:  类型安全 - 所有变量显式类型
+✓ Rule 4:  资源引用 - 无硬编码
+✓ Rule 14: 无障碍 - 已添加 accessibilityText
+✓ Rule 16: 跨文件同步 - 已输出资源文件
+```
+
+### 流程图
 
 ```mermaid
 flowchart TD
-    A[User Request] --> B{Is HarmonyOS UI/UX?}
-    B -->|Yes| C[Load Knowledge Base]
-    B -->|No| Z[Use Default Behavior]
-    C --> D[Analyze Requirements]
-    D --> E[Select Design Tokens]
-    E --> F[Choose Components]
-    F --> G[Apply Layout Pattern]
-    G --> H[Generate ArkTS Code]
-    H --> I[Validate Best Practices]
-    I --> J[Deliver Code]
+    A[用户请求] --> B{是 HarmonyOS UI/UX?}
+    B -->|否| Z[使用默认行为]
+    B -->|是| C[Step 1: 知识库检索]
+    C --> C1[识别关键词]
+    C1 --> C2[搜索 .shared/harmony-ui-ux-pro-max/]
+    C2 --> C3[确认专用模板/规范]
+    C3 --> D[Step 2: 架构规划]
+    D --> D1[描述使用的组件和规范]
+    D1 --> D2[绘制 UI 架构简图]
+    D2 --> E[Step 3: 代码实现]
+    E --> E1[基于模板生成 ArkTS]
+    E1 --> E2[同步输出资源文件]
+    E2 --> E3[输出规范对齐说明]
+    E3 --> F[交付代码]
 ```
 
 ## Mandatory Coding Rules ⚠️
