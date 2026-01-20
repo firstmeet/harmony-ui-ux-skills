@@ -296,6 +296,770 @@ Text('🍼 喂养')
    提示下一步操作
 ```
 
+### Rule 14: Accessibility (无障碍)
+
+**强制要求**: 为所有交互元素添加无障碍描述。
+
+```typescript
+// CORRECT - 包含无障碍描述
+Image($r('app.media.product_image'))
+  .width(80)
+  .height(80)
+  .accessibilityText('商品图片: iPhone 15 Pro')
+
+Button($r('app.string.submit'))
+  .onClick(() => this.handleSubmit())
+  .accessibilityText('提交订单')
+  .accessibilityDescription('点击后将提交当前购物车中的商品')
+
+// WRONG - 缺少无障碍描述 (FORBIDDEN!)
+Image($r('app.media.product_image'))
+  .width(80)
+
+Button($r('app.string.submit'))
+  .onClick(() => this.handleSubmit())
+```
+
+**无障碍检查清单**:
+- [ ] 所有 `Image` 组件必须添加 `.accessibilityText()`
+- [ ] 所有 `Button` 组件必须添加 `.accessibilityText()`
+- [ ] 图标按钮必须有描述性文本
+- [ ] 表单输入需要关联 label
+- [ ] 复杂交互需要 `.accessibilityDescription()` 补充说明
+
+### Rule 15: Architecture (架构规范)
+
+**强制要求**: 将业务逻辑从 `build()` 方法分离到独立的 ViewModel 类中。
+
+```typescript
+// CORRECT - 业务逻辑在 ViewModel 中
+// viewmodel/ProductViewModel.ets
+@ObservedV2
+export class ProductViewModel extends BaseViewModel {
+  @Trace products: Product[] = []
+  @Trace isLoading: boolean = false
+
+  async loadProducts(): Promise<void> {
+    this.isLoading = true
+    try {
+      this.products = await ProductService.fetchProducts()
+    } finally {
+      this.isLoading = false
+    }
+  }
+}
+
+// pages/ProductPage.ets
+@Entry
+@Component
+struct ProductPage {
+  @State viewModel: ProductViewModel = new ProductViewModel()
+
+  aboutToAppear(): void {
+    this.viewModel.loadProducts()
+  }
+
+  build() {
+    Column() {
+      // build() 只做 UI 渲染，不做业务处理
+      ForEach(this.viewModel.products, (item: Product) => {
+        ProductCard({ product: item })
+      })
+    }
+  }
+}
+
+// WRONG - 业务逻辑混在 build() 中 (FORBIDDEN!)
+@Entry
+@Component
+struct ProductPage {
+  @State products: Product[] = []
+
+  build() {
+    Column() {
+      // 错误: 在 build 中执行业务逻辑
+      Button('加载')
+        .onClick(async () => {
+          // 大量业务代码...
+          const response = await http.request(...)
+          const data = JSON.parse(response)
+          this.products = data.items.filter(...)
+          // ...更多处理逻辑
+        })
+    }
+  }
+}
+```
+
+**架构检查清单**:
+- [ ] 每个页面对应一个 ViewModel 类
+- [ ] ViewModel 使用 `@ObservedV2` + `@Trace` 装饰
+- [ ] `build()` 方法不包含超过 3 行的业务逻辑
+- [ ] 数据获取/处理/转换在 ViewModel 中完成
+- [ ] 参考 `.shared/harmony-ui-ux-pro-max/ARCHITECTURE.md` 模板
+
+### Rule 16: Offline-First (离线优先)
+
+**强制要求**: 涉及列表数据时，必须主动询问是否需要数据库本地缓存。
+
+#### 触发场景
+- 商品列表、订单列表、消息列表等数据展示
+- 需要支持离线访问的功能
+- 网络请求结果需要持久化
+
+#### 对话模板
+
+```
+当检测到列表数据场景时，AI 必须询问：
+
+"这个列表数据是否需要支持离线访问？
+ - 如果是，我将使用 RDB 本地缓存 + Offline-First 策略
+ - 如果否，我将使用纯网络请求 + 内存缓存"
+```
+
+#### 实现规范
+
+```typescript
+// CORRECT - Offline-First 策略
+// 1. 创建 DAO 层
+// database/ProductDao.ets
+export class ProductDao {
+  async queryAll(): Promise<Product[]> { ... }
+  async upsertBatch(products: Product[]): Promise<void> { ... }
+}
+
+// 2. 创建 Repository 层
+// database/ProductRepository.ets
+export class ProductRepository {
+  async getProducts(forceRefresh: boolean = false): Promise<Product[]> {
+    // 先返回本地缓存
+    const local = await this.dao.queryAll()
+    if (!forceRefresh && local.length > 0) {
+      return local
+    }
+    
+    // 后台请求远程数据并更新本地
+    try {
+      const remote = await ProductApi.fetchProducts()
+      await this.dao.upsertBatch(remote)
+      return remote
+    } catch {
+      return local  // 网络失败降级到本地
+    }
+  }
+}
+
+// 3. ViewModel 使用 Repository
+@ObservedV2
+export class ProductViewModel extends BaseViewModel {
+  private repository = new ProductRepository()
+  
+  async loadProducts(): Promise<void> {
+    this.products = await this.repository.getProducts()
+  }
+}
+```
+
+**离线优先检查清单**:
+- [ ] 创建对应的 DAO 类 (参考 `STORAGE_GUIDE.md`)
+- [ ] 创建 Repository 层封装缓存策略
+- [ ] ViewModel 通过 Repository 获取数据
+- [ ] 处理网络失败的降级逻辑
+- [ ] 初始化时正确调用 `DatabaseHelper.init()`
+
+### Rule 17: Distributed (分布式同步)
+
+**强制要求**: 涉及跨端应用场景时，必须实现分布式同步逻辑。
+
+#### 触发场景
+- 用户提及"多设备同步"、"跨设备"、"流转"
+- 协同编辑、共享白板等实时协作
+- 视频/音频播放进度同步
+- 应用状态在设备间迁移
+
+#### 对话模板
+
+```
+当检测到跨端场景时，AI 必须询问：
+
+"这个功能是否需要支持跨设备使用？
+ - 多设备实时同步 → 使用分布式数据对象
+ - 应用流转/迁移 → 使用 Continuity API
+ - 配置同步 → 使用分布式 KV 存储"
+```
+
+#### 实现规范
+
+```typescript
+// 1. 配置权限 (module.json5)
+{
+  "module": {
+    "requestPermissions": [
+      {
+        "name": "ohos.permission.DISTRIBUTED_DATASYNC",
+        "reason": "$string:distributed_sync_reason"
+      }
+    ],
+    "abilities": [
+      {
+        "name": "EntryAbility",
+        "continuable": true  // 支持流转
+      }
+    ]
+  }
+}
+
+// 2. 实现分布式数据对象 (实时同步)
+import { DistributedDataManager } from '../services/DistributedDataService'
+
+@ObservedV2
+export class CollabViewModel extends BaseViewModel {
+  private distributedManager = new DistributedDataManager<CollabData>()
+  
+  async createSession(): Promise<string> {
+    await this.distributedManager.create(initialData)
+    this.distributedManager.onDataChange((sid, fields) => {
+      this.handleRemoteChange(fields)
+    })
+    return this.distributedManager.genSessionId()
+  }
+}
+
+// 3. 实现流转 (EntryAbility)
+onContinue(wantParam: Record<string, Object>): AbilityConstant.OnContinueResult {
+  wantParam['pageUrl'] = this.currentPageUrl
+  wantParam['pageState'] = JSON.stringify(this.pageState)
+  return AbilityConstant.OnContinueResult.AGREE
+}
+```
+
+**分布式同步检查清单**:
+- [ ] 添加 `DISTRIBUTED_DATASYNC` 权限
+- [ ] 根据场景选择正确的同步方式
+- [ ] Ability 配置 `continuable: true` (如需流转)
+- [ ] 实现状态保存 (`onContinue`) 和恢复逻辑
+- [ ] 参考 `.shared/harmony-ui-ux-pro-max/DISTRIBUTED_SYNC.md`
+
+### Rule 21: Collaborative UX (协作体验)
+
+**强制要求**: 当用户提到"邀请、加入、共享、同步"时，必须主动提供"碰一碰"方案。
+
+#### 触发关键词
+- "邀请成员"、"加入房间"、"共享数据"、"多设备同步"
+- "Invite"、"Join"、"Share"、"Sync"
+- "碰一碰"、"NFC"、"触碰连接"
+
+#### 对话模板
+
+```
+当检测到协作场景时，AI 必须主动询问：
+
+"检测到协作需求，推荐使用'碰一碰'快速连接方案：
+ - 📱 发送端：显示等待感应动画，等待其他设备触碰
+ - 📲 接收端：NFC 触碰后弹出确认加入弹窗
+ 
+是否需要我实现这个交互流程？"
+```
+
+#### UI 规范
+
+**发送端必须包含**:
+- "等待感应"脉冲动画 (使用 `animateTo` 实现)
+- NFC 图标居中显示
+- 会话状态文字提示
+- 超时自动取消 (默认 5 分钟)
+
+**接收端必须包含**:
+- 系统弹窗确认加入 (`@CustomDialog`)
+- 显示邀请方设备信息
+- 明确的"加入"/"取消"按钮
+- 加入前的身份验证
+
+#### 代码模板
+
+```typescript
+// 发送端 - 等待感应
+@Component
+export struct WaitingForTapView {
+  @State animationScale: number = 1
+  
+  aboutToAppear(): void {
+    // 启动脉冲动画
+    setInterval(() => {
+      animateTo({ duration: 1000, curve: Curve.EaseInOut }, () => {
+        this.animationScale = this.animationScale === 1 ? 1.2 : 1
+      })
+    }, 2000)
+  }
+
+  build() {
+    Column() {
+      Stack() {
+        Circle()
+          .width(160)
+          .height(160)
+          .fill($r('app.color.primary'))
+          .opacity(0.2)
+          .scale({ x: this.animationScale, y: this.animationScale })
+        
+        SymbolGlyph($r('sys.symbol.wave_3_right'))
+          .fontSize(48)
+          .fontColor([$r('app.color.primary')])
+      }
+      .accessibilityText('等待其他设备触碰连接')
+      
+      Text('请将另一台设备靠近')
+        .fontSize($r('app.float.font_size_lg'))
+        .margin({ top: 24 })
+    }
+  }
+}
+
+// 接收端 - 确认弹窗
+@CustomDialog
+export struct JoinConfirmDialog {
+  controller: CustomDialogController
+  hostDeviceName: string = ''
+  onConfirm: () => void = () => {}
+  
+  build() {
+    Column() {
+      SymbolGlyph($r('sys.symbol.link'))
+        .fontSize(48)
+        .fontColor([$r('app.color.primary')])
+      
+      Text(`来自 ${this.hostDeviceName} 的邀请`)
+        .fontSize($r('app.float.font_size_lg'))
+        .margin({ top: 16 })
+      
+      Row() {
+        Button($r('app.string.cancel'))
+          .onClick(() => this.controller.close())
+          .accessibilityText('取消加入')
+        
+        Button('加入')
+          .onClick(() => {
+            this.onConfirm()
+            this.controller.close()
+          })
+          .accessibilityText('确认加入协作')
+      }
+      .margin({ top: 24 })
+    }
+  }
+}
+```
+
+**协作 UX 检查清单**:
+- [ ] 发送端有"等待感应"脉冲动画
+- [ ] 接收端有系统确认弹窗
+- [ ] 弹窗显示邀请方设备信息
+- [ ] 加入前验证用户身份
+- [ ] 参考 `.shared/harmony-ui-ux-pro-max/COLLABORATION_PATTERN.md`
+
+### Rule 22: State Persistence (状态持久化)
+
+**强制要求**: 分布式对象同步的数据必须配合 RDB 或 Preferences 做持久化。
+
+#### 设计原则
+
+```
+分布式同步数据 ─────► 本地持久化
+       │                  │
+       │                  ▼
+       │           设备离线/重启
+       │                  │
+       │                  ▼
+       └────────► 数据恢复正常
+```
+
+#### 实现规范
+
+```typescript
+// ⚠️ CORRECT - 分布式数据 + 本地持久化
+@ObservedV2
+export class CollaborationViewModel extends BaseViewModel {
+  private syncManager = new DistributedSyncManager<CollabData>()
+  private localDao = new CollabDataDao()  // RDB 持久化
+  
+  async createSession(data: CollabData): Promise<void> {
+    // 1. 创建分布式同步
+    await this.syncManager.createSession(data)
+    
+    // 2. 同时保存到本地数据库
+    await this.localDao.insert(data)
+    
+    // 3. 监听远程变更并同步到本地
+    this.syncManager.onDataChange((remoteData, fields) => {
+      this.localDao.update(remoteData)  // 同步到本地
+      this.refreshUI(remoteData)
+    })
+  }
+  
+  async restoreSession(): Promise<CollabData | null> {
+    // 优先从本地恢复
+    const localData = await this.localDao.query()
+    if (localData) {
+      return localData
+    }
+    return null
+  }
+}
+
+// ❌ WRONG - 仅分布式同步，无本地持久化
+@ObservedV2
+export class BadViewModel extends BaseViewModel {
+  private syncManager = new DistributedSyncManager<CollabData>()
+  
+  async createSession(data: CollabData): Promise<void> {
+    // 仅分布式同步，设备离线后数据丢失！
+    await this.syncManager.createSession(data)
+  }
+}
+```
+
+**状态持久化检查清单**:
+- [ ] 分布式数据同时写入 RDB 或 Preferences
+- [ ] `onDataChange` 回调中同步更新本地存储
+- [ ] 应用重启时优先从本地恢复数据
+- [ ] 实现数据冲突合并策略（如有需要）
+
+### Rule 23: Resource Management (资源管理)
+
+**强制要求**: 在组件销毁时，必须显式调用 `off('change')` 解绑分布式监听。
+
+#### 内存泄漏风险
+
+```
+组件创建 ───► 注册监听 ───► 组件销毁 ───► 监听未解绑 ───► 内存泄漏！
+     │                                         │
+     │                                         ▼
+     │                              回调持续触发，引用无法释放
+```
+
+#### 实现规范
+
+```typescript
+// ⚠️ CORRECT - 正确的资源管理
+@Entry
+@Component
+struct CollaborationPage {
+  @State viewModel: CollaborationViewModel = new CollaborationViewModel()
+  
+  aboutToAppear(): void {
+    this.viewModel.onInit()
+  }
+  
+  /**
+   * ⚠️ 关键：组件销毁时必须清理资源
+   */
+  aboutToDisappear(): void {
+    this.viewModel.onDestroy()
+  }
+  
+  build() { /* ... */ }
+}
+
+// ViewModel 中的资源清理
+@ObservedV2
+export class CollaborationViewModel extends BaseViewModel {
+  private syncManager: DistributedSyncManager<CollabData> | null = null
+  private changeListener: ((data: CollabData, fields: string[]) => void) | null = null
+  
+  async onInit(): Promise<void> {
+    this.syncManager = new DistributedSyncManager<CollabData>()
+    
+    // 保存监听器引用
+    this.changeListener = (data, fields) => {
+      this.handleDataChange(data, fields)
+    }
+    
+    this.syncManager.onDataChange(this.changeListener)
+  }
+  
+  /**
+   * ⚠️ 必须实现的清理方法
+   */
+  override onDestroy(): void {
+    if (this.syncManager) {
+      // 显式解绑监听器
+      this.syncManager.destroy()  // 内部会调用 off('change') 和 off('status')
+      this.syncManager = null
+    }
+    this.changeListener = null
+  }
+}
+
+// ❌ WRONG - 未清理资源
+@Entry
+@Component
+struct BadPage {
+  @State viewModel: BadViewModel = new BadViewModel()
+  
+  aboutToAppear(): void {
+    this.viewModel.onInit()
+  }
+  
+  // 缺少 aboutToDisappear！
+  // 组件销毁后监听器仍在运行，造成内存泄漏
+  
+  build() { /* ... */ }
+}
+```
+
+#### DistributedSyncManager 正确的 destroy 实现
+
+```typescript
+export class DistributedSyncManager<T extends object> {
+  private dataObject: distributedDataObject.DataObject | null = null
+  private changeListener: ((sessionId: string, fields: string[]) => void) | null = null
+  private statusListener: ((sessionId: string, networkId: string, status: string) => void) | null = null
+
+  /**
+   * ⚠️ 销毁方法 - 必须在组件 aboutToDisappear 时调用
+   */
+  destroy(): void {
+    if (this.dataObject) {
+      // 显式解绑 change 监听
+      if (this.changeListener) {
+        this.dataObject.off('change', this.changeListener)
+        this.changeListener = null
+      }
+      
+      // 显式解绑 status 监听
+      if (this.statusListener) {
+        this.dataObject.off('status', this.statusListener)
+        this.statusListener = null
+      }
+      
+      this.dataObject = null
+    }
+  }
+}
+```
+
+**资源管理检查清单**:
+- [ ] 组件实现 `aboutToDisappear` 生命周期
+- [ ] `aboutToDisappear` 中调用 ViewModel 的 `onDestroy`
+- [ ] ViewModel 的 `onDestroy` 显式调用 `off('change')`
+- [ ] ViewModel 的 `onDestroy` 显式调用 `off('status')`
+- [ ] 将监听器引用置为 null 帮助 GC
+- [ ] 参考 `.shared/harmony-ui-ux-pro-max/COLLABORATION_PATTERN.md`
+
+### Rule 24: Error Handling (错误处理规范)
+
+**强制要求**: 在 catch 块中重新抛出错误时，必须使用 `throw new Error()` 包装，不能直接 `throw error`。
+
+#### 问题背景
+
+ArkTS 的 catch 块中捕获的 `error` 类型是 `unknown`，直接 `throw error` 会丢失类型信息且不符合 ArkTS 严格类型检查。
+
+#### 错误写法 vs 正确写法
+
+```typescript
+// ❌ WRONG - 直接 throw error
+async function badExample(): Promise<void> {
+  try {
+    await someAsyncOperation()
+  } catch (error) {
+    hilog.error(DOMAIN, TAG, `Failed: ${error}`)
+    throw error  // 错误! error 类型是 unknown
+  }
+}
+
+// ✅ CORRECT - 使用 new Error() 包装
+async function goodExample(): Promise<void> {
+  try {
+    await someAsyncOperation()
+  } catch (error) {
+    const err = error as BusinessError
+    hilog.error(DOMAIN, TAG, `Failed: ${err.code} - ${err.message}`)
+    throw new Error(String(error))  // 正确! 创建新的 Error 对象
+  }
+}
+
+// ✅ CORRECT - 转换为 BusinessError
+async function goodExample2(): Promise<void> {
+  try {
+    await someAsyncOperation()
+  } catch (error) {
+    const err = error as BusinessError
+    hilog.error(DOMAIN, TAG, `Failed: ${err.code} - ${err.message}`)
+    throw new Error(`Operation failed: ${err.code} - ${err.message}`)
+  }
+}
+```
+
+#### 最佳实践模式
+
+```typescript
+/**
+ * 标准错误处理模式
+ */
+import { BusinessError } from '@kit.BasicServicesKit'
+
+export class ServiceExample {
+  private static readonly TAG = 'ServiceExample'
+  private static readonly DOMAIN = 0x0000
+
+  async performOperation(): Promise<Result> {
+    try {
+      // 业务逻辑
+      return await this.doSomething()
+    } catch (error) {
+      // 1. 类型断言
+      const err = error as BusinessError
+      
+      // 2. 记录日志
+      hilog.error(ServiceExample.DOMAIN, ServiceExample.TAG,
+        `Operation failed: ${err.code} - ${err.message}`)
+      
+      // 3. 包装后重新抛出
+      throw new Error(`Operation failed: ${err.message || String(error)}`)
+    }
+  }
+}
+```
+
+**错误处理检查清单**:
+- [ ] catch 块中不直接 `throw error`
+- [ ] 使用 `throw new Error(String(error))` 或 `throw new Error(err.message)`
+- [ ] 对系统 API 错误使用 `BusinessError` 类型断言
+- [ ] 记录错误日志后再抛出
+- [ ] 抛出的错误信息包含足够的上下文信息
+
+---
+
+## 发布前检查清单 (Pre-Release Checklist)
+
+当用户说 **"完成页面"** 或类似指令时，AI 必须对照以下清单输出走查报告：
+
+### 触发关键词
+- "完成页面"、"页面完成"、"完成开发"
+- "发布检查"、"上线前检查"
+- "Final check"、"Pre-release"
+
+### 检查清单模板
+
+```markdown
+## 📋 发布前检查报告
+
+### 1. 代码规范 ✅/❌
+- [ ] **类型安全**: 无 `any` 类型，所有变量显式类型
+- [ ] **资源引用**: 无硬编码颜色/字符串/尺寸，全部使用 `$r()`
+- [ ] **禁止 Emoji**: 代码和资源中无 emoji 字符
+
+### 2. 架构规范 ✅/❌
+- [ ] **MVVM 分离**: 业务逻辑在 ViewModel，UI 在 View
+- [ ] **ViewModel 装饰**: 使用 `@ObservedV2` + `@Trace`
+- [ ] **build() 纯净**: 无复杂业务逻辑
+
+### 3. 无障碍 ✅/❌
+- [ ] **Image 组件**: 全部添加 `.accessibilityText()`
+- [ ] **Button 组件**: 全部添加 `.accessibilityText()`
+- [ ] **表单元素**: 有清晰的 label 关联
+
+### 4. 响应式布局 ✅/❌
+- [ ] **断点适配**: 使用 GridRow/GridCol + breakpoints
+- [ ] **单位规范**: 使用 vp/fp，无 px
+- [ ] **一多架构**: 手机/折叠屏/平板显示正常
+
+### 5. 性能优化 ✅/❌
+- [ ] **嵌套层级**: 组件嵌套 ≤ 5 层
+- [ ] **长列表**: 数据 > 50 使用 LazyForEach
+- [ ] **状态隔离**: 频繁更新状态已拆分子组件
+
+### 6. 资源同步 ✅/❌
+- [ ] **页面注册**: main_pages.json 已更新
+- [ ] **资源文件**: string.json/color.json/float.json 已同步
+- [ ] **权限声明**: module.json5 权限已配置
+
+### 7. 系统集成 ✅/❌
+- [ ] **Kit 使用**: 扫码用 ScanKit，分享用 ShareKit
+- [ ] **权限请求**: 运行时权限已处理
+- [ ] **错误处理**: 网络/权限错误有友好提示
+
+### 8. 数据持久化 ✅/❌ (如适用)
+- [ ] **离线缓存**: 列表数据使用 RDB 本地缓存
+- [ ] **缓存策略**: 实现 Offline-First 降级逻辑
+- [ ] **数据库初始化**: EntryAbility 中调用 DatabaseHelper.init()
+
+### 9. 分布式能力 ✅/❌ (如适用)
+- [ ] **权限声明**: 已添加 DISTRIBUTED_DATASYNC 权限
+- [ ] **流转配置**: Ability 已设置 continuable: true
+- [ ] **状态保存**: 实现 onContinue 保存关键状态
+- [ ] **状态恢复**: 实现流转后的状态恢复逻辑
+
+---
+
+### 检查结果汇总
+
+| 类别 | 状态 | 问题数 |
+|------|------|--------|
+| 代码规范 | ✅ 通过 | 0 |
+| 架构规范 | ✅ 通过 | 0 |
+| 无障碍 | ⚠️ 需改进 | 2 |
+| 响应式布局 | ✅ 通过 | 0 |
+| 性能优化 | ✅ 通过 | 0 |
+| 资源同步 | ✅ 通过 | 0 |
+| 系统集成 | ✅ 通过 | 0 |
+
+### 需修复的问题
+
+1. **[无障碍]** `ProductCard` 组件的 Image 缺少 accessibilityText
+2. **[无障碍]** 购买按钮缺少 accessibilityDescription
+
+### 修复建议
+
+\`\`\`typescript
+// ProductCard.ets 第 45 行
+Image(product.imageUrl)
+  .accessibilityText(`商品图片: ${product.name}`)  // 添加此行
+
+// 第 67 行
+Button($r('app.string.buy'))
+  .accessibilityText('立即购买')  // 添加此行
+  .accessibilityDescription(`购买 ${product.name}，价格 ${product.price} 元`)
+\`\`\`
+```
+
+---
+
+## Knowledge Base Files (Updated)
+
+Load these files for design intelligence:
+
+### 核心规范 (必读)
+- `.shared/harmony-ui-ux-pro-max/CODING_RULES.md` - **⚠️ MANDATORY - 编码规则**
+- `.shared/harmony-ui-ux-pro-max/RESOURCE_SYNC_RULES.md` - **⚠️ 资源同步规则**
+- `.shared/harmony-ui-ux-pro-max/ARCHITECTURE.md` - **⚠️ MVVM 架构规范**
+
+### 系统能力
+- `.shared/harmony-ui-ux-pro-max/SYSTEM_KITS.md` - **系统 Kit 集成指南**
+
+### 数据持久化与分布式
+- `.shared/harmony-ui-ux-pro-max/STORAGE_GUIDE.md` - **RDB 和 Preferences 持久化指南**
+- `.shared/harmony-ui-ux-pro-max/DISTRIBUTED_SYNC.md` - **分布式数据同步与流转指南**
+- `.shared/harmony-ui-ux-pro-max/COLLABORATION_PATTERN.md` - **分布式协同协议 (碰一碰)**
+
+### 设计系统
+- `.shared/harmony-ui-ux-pro-max/DESIGN_SYSTEM.md` - Design tokens, colors, typography
+- `.shared/harmony-ui-ux-pro-max/COMPONENTS.md` - Component patterns and usage
+- `.shared/harmony-ui-ux-pro-max/PAGE_TEMPLATES.md` - Page structure templates
+
+### 布局与响应式
+- `.shared/harmony-ui-ux-pro-max/LAYOUTS.md` - Layout patterns for HarmonyOS
+- `.shared/harmony-ui-ux-pro-max/RESPONSIVE_STRATEGY.md` - 一多架构断点和布局策略
+
+### 性能与动画
+- `.shared/harmony-ui-ux-pro-max/PERFORMANCE_GUARD.md` - 性能约束和优化规范
+- `.shared/harmony-ui-ux-pro-max/ANIMATION_SYSTEM.md` - 动画曲线和转场规范
+
+### 最佳实践
+- `.shared/harmony-ui-ux-pro-max/BEST_PRACTICES.md` - UI/UX best practices
+
+---
+
 ## Core Principles
 
 1. **HarmonyOS Design Language** - Follow HarmonyOS visual style
@@ -304,3 +1068,8 @@ Text('🍼 喂养')
 4. **Performance First** - Efficient rendering and smooth animations
 5. **Accessibility** - Support screen readers and accessibility features
 6. **Natural Motion** - 动效自然流畅，使用推荐曲线
+7. **MVVM Architecture** - 业务逻辑与 UI 分离，使用 ViewModel 模式
+8. **Offline-First** - 列表数据优先本地缓存，网络失败时降级
+9. **Distributed Ready** - 跨设备场景默认支持分布式同步
+10. **Collaborative UX** - 协作场景主动提供"碰一碰"方案
+11. **Resource Safety** - 组件销毁时必须清理分布式监听资源

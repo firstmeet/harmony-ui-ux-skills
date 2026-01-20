@@ -183,6 +183,8 @@ STRINGS_BASE = {
         {"name": "home", "value": "首页"},
         {"name": "message", "value": "消息"},
         {"name": "notification", "value": "通知"},
+        # 权限说明
+        {"name": "permission_distributed_datasync_reason", "value": "用于多设备间同步应用数据"},
     ]
 }
 
@@ -341,7 +343,16 @@ def get_module_json5(project_name: str, bundle_name: str) -> str:
       }}
     ],
     "extensionAbilities": [],
-    "requestPermissions": []
+    "requestPermissions": [
+      {{
+        "name": "ohos.permission.DISTRIBUTED_DATASYNC",
+        "reason": "$string:permission_distributed_datasync_reason",
+        "usedScene": {{
+          "abilities": ["EntryAbility"],
+          "when": "inuse"
+        }}
+      }}
+    ]
   }}
 }}
 '''
@@ -654,6 +665,786 @@ interface QuickAction {
 '''
 
 
+def get_base_viewmodel() -> str:
+    """生成 ViewModel 基类 BaseViewModel.ets"""
+    return '''/**
+ * ViewModel 基类
+ * 提供通用的状态管理和生命周期钩子
+ * 
+ * 使用方式:
+ * @ObservedV2
+ * export class MyViewModel extends BaseViewModel {
+ *   @Trace myData: string = ''
+ *   
+ *   async loadData(): Promise<void> {
+ *     await this.executeAsync(
+ *       async () => fetchData(),
+ *       (result) => { this.myData = result }
+ *     )
+ *   }
+ * }
+ */
+@ObservedV2
+export class BaseViewModel {
+  /** 加载状态 */
+  @Trace isLoading: boolean = false
+
+  /** 错误信息 */
+  @Trace errorMessage: string = ''
+
+  /** 是否有错误 */
+  @Trace hasError: boolean = false
+
+  /**
+   * 初始化 ViewModel
+   * 子类可重写此方法进行初始化操作
+   */
+  async onInit(): Promise<void> {
+    // 子类实现
+  }
+
+  /**
+   * 清理资源
+   * 在组件 aboutToDisappear 时调用
+   */
+  onDestroy(): void {
+    // 子类实现
+  }
+
+  /**
+   * 设置加载状态
+   */
+  protected setLoading(loading: boolean): void {
+    this.isLoading = loading
+  }
+
+  /**
+   * 设置错误信息
+   */
+  protected setError(message: string): void {
+    this.errorMessage = message
+    this.hasError = message.length > 0
+  }
+
+  /**
+   * 清除错误
+   */
+  protected clearError(): void {
+    this.errorMessage = ''
+    this.hasError = false
+  }
+
+  /**
+   * 执行异步操作的包装器
+   * 自动处理加载状态和错误
+   * 
+   * @param operation 异步操作
+   * @param onSuccess 成功回调
+   * @param onError 错误回调
+   */
+  protected async executeAsync<T>(
+    operation: () => Promise<T>,
+    onSuccess?: (result: T) => void,
+    onError?: (error: Error) => void
+  ): Promise<T | undefined> {
+    this.setLoading(true)
+    this.clearError()
+
+    try {
+      const result = await operation()
+      if (onSuccess) {
+        onSuccess(result)
+      }
+      return result
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '操作失败'
+      this.setError(errorMessage)
+      if (onError) {
+        onError(error as Error)
+      }
+      return undefined
+    } finally {
+      this.setLoading(false)
+    }
+  }
+}
+'''
+
+
+def get_database_helper() -> str:
+    """生成数据库管理器 DatabaseHelper.ets"""
+    return '''/**
+ * 数据库管理器
+ * 单例模式，管理 RDB 数据库连接和版本升级
+ * 
+ * 使用方式:
+ * 1. 在 EntryAbility.onCreate 中调用 DatabaseHelper.getInstance().init(context)
+ * 2. 通过 DatabaseHelper.getInstance().getStore() 获取数据库实例
+ */
+import { relationalStore } from '@kit.ArkData'
+import { common } from '@kit.AbilityKit'
+import { hilog } from '@kit.PerformanceAnalysisKit'
+import { BusinessError } from '@kit.BasicServicesKit'
+
+/**
+ * 数据库配置
+ */
+const DB_CONFIG: relationalStore.StoreConfig = {
+  name: 'app_database.db',
+  securityLevel: relationalStore.SecurityLevel.S1,
+  encrypt: false
+}
+
+/**
+ * 建表 SQL - 根据业务需求添加表结构
+ */
+const CREATE_TABLES: string[] = [
+  // 示例表 - 根据实际需求修改
+  `CREATE TABLE IF NOT EXISTS cache_data (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    cache_key TEXT NOT NULL UNIQUE,
+    cache_value TEXT NOT NULL,
+    expire_at INTEGER,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_cache_key ON cache_data(cache_key)`
+]
+
+export class DatabaseHelper {
+  private static readonly TAG = 'DatabaseHelper'
+  private static readonly DOMAIN = 0x0000
+
+  private static instance: DatabaseHelper | null = null
+  private rdbStore: relationalStore.RdbStore | null = null
+
+  private constructor() {}
+
+  /**
+   * 获取单例实例
+   */
+  static getInstance(): DatabaseHelper {
+    if (!DatabaseHelper.instance) {
+      DatabaseHelper.instance = new DatabaseHelper()
+    }
+    return DatabaseHelper.instance
+  }
+
+  /**
+   * 初始化数据库
+   * @param context 应用上下文
+   */
+  async init(context: common.Context): Promise<void> {
+    try {
+      this.rdbStore = await relationalStore.getRdbStore(context, DB_CONFIG)
+      hilog.info(DatabaseHelper.DOMAIN, DatabaseHelper.TAG, 'Database initialized')
+
+      await this.createTables()
+    } catch (error) {
+      const err = error as BusinessError
+      hilog.error(DatabaseHelper.DOMAIN, DatabaseHelper.TAG,
+        `Init failed: ${err.code} - ${err.message}`)
+      throw new Error(`Database init failed: ${err.message || String(error)}`)
+    }
+  }
+
+  /**
+   * 创建表结构
+   */
+  private async createTables(): Promise<void> {
+    if (!this.rdbStore) return
+
+    for (const sql of CREATE_TABLES) {
+      try {
+        await this.rdbStore.executeSql(sql)
+      } catch (error) {
+        hilog.error(DatabaseHelper.DOMAIN, DatabaseHelper.TAG,
+          `Create table failed: ${error}`)
+      }
+    }
+  }
+
+  /**
+   * 获取数据库实例
+   */
+  getStore(): relationalStore.RdbStore {
+    if (!this.rdbStore) {
+      throw new Error('Database not initialized. Call init() first.')
+    }
+    return this.rdbStore
+  }
+
+  /**
+   * 关闭数据库连接
+   */
+  async close(): Promise<void> {
+    if (this.rdbStore) {
+      this.rdbStore = null
+    }
+  }
+}
+'''
+
+
+def get_preferences_util() -> str:
+    """生成 Preferences 工具类 PreferencesUtil.ets"""
+    return '''/**
+ * Preferences 工具类
+ * 封装轻量级键值存储的常用操作
+ * 
+ * 使用方式:
+ * 1. 在 EntryAbility.onCreate 中调用 PreferencesUtil.init(context)
+ * 2. 通过静态方法进行存取操作
+ */
+import { preferences } from '@kit.ArkData'
+import { common } from '@kit.AbilityKit'
+import { hilog } from '@kit.PerformanceAnalysisKit'
+import { BusinessError } from '@kit.BasicServicesKit'
+
+export class PreferencesUtil {
+  private static readonly TAG = 'PreferencesUtil'
+  private static readonly DOMAIN = 0x0000
+  private static readonly STORE_NAME = 'app_preferences'
+
+  private static preferencesInstance: preferences.Preferences | null = null
+
+  /**
+   * 初始化 Preferences
+   */
+  static async init(context: common.Context): Promise<void> {
+    try {
+      PreferencesUtil.preferencesInstance = await preferences.getPreferences(
+        context,
+        PreferencesUtil.STORE_NAME
+      )
+      hilog.info(PreferencesUtil.DOMAIN, PreferencesUtil.TAG, 'Preferences initialized')
+    } catch (error) {
+      const err = error as BusinessError
+      hilog.error(PreferencesUtil.DOMAIN, PreferencesUtil.TAG,
+        `Init failed: ${err.code} - ${err.message}`)
+    }
+  }
+
+  private static getPreferences(): preferences.Preferences {
+    if (!PreferencesUtil.preferencesInstance) {
+      throw new Error('Preferences not initialized. Call init() first.')
+    }
+    return PreferencesUtil.preferencesInstance
+  }
+
+  // 字符串操作
+  static async putString(key: string, value: string): Promise<void> {
+    try {
+      const prefs = PreferencesUtil.getPreferences()
+      await prefs.put(key, value)
+      await prefs.flush()
+    } catch (error) {
+      hilog.error(PreferencesUtil.DOMAIN, PreferencesUtil.TAG, `Put string failed: ${error}`)
+    }
+  }
+
+  static async getString(key: string, defaultValue: string = ''): Promise<string> {
+    try {
+      const prefs = PreferencesUtil.getPreferences()
+      return await prefs.get(key, defaultValue) as string
+    } catch (error) {
+      return defaultValue
+    }
+  }
+
+  // 数值操作
+  static async putNumber(key: string, value: number): Promise<void> {
+    try {
+      const prefs = PreferencesUtil.getPreferences()
+      await prefs.put(key, value)
+      await prefs.flush()
+    } catch (error) {
+      hilog.error(PreferencesUtil.DOMAIN, PreferencesUtil.TAG, `Put number failed: ${error}`)
+    }
+  }
+
+  static async getNumber(key: string, defaultValue: number = 0): Promise<number> {
+    try {
+      const prefs = PreferencesUtil.getPreferences()
+      return await prefs.get(key, defaultValue) as number
+    } catch (error) {
+      return defaultValue
+    }
+  }
+
+  // 布尔值操作
+  static async putBoolean(key: string, value: boolean): Promise<void> {
+    try {
+      const prefs = PreferencesUtil.getPreferences()
+      await prefs.put(key, value)
+      await prefs.flush()
+    } catch (error) {
+      hilog.error(PreferencesUtil.DOMAIN, PreferencesUtil.TAG, `Put boolean failed: ${error}`)
+    }
+  }
+
+  static async getBoolean(key: string, defaultValue: boolean = false): Promise<boolean> {
+    try {
+      const prefs = PreferencesUtil.getPreferences()
+      return await prefs.get(key, defaultValue) as boolean
+    } catch (error) {
+      return defaultValue
+    }
+  }
+
+  // 对象操作 (JSON 序列化)
+  static async putObject<T>(key: string, value: T): Promise<void> {
+    await PreferencesUtil.putString(key, JSON.stringify(value))
+  }
+
+  static async getObject<T>(key: string, defaultValue: T): Promise<T> {
+    try {
+      const json = await PreferencesUtil.getString(key, '')
+      return json ? JSON.parse(json) as T : defaultValue
+    } catch (error) {
+      return defaultValue
+    }
+  }
+
+  // 通用操作
+  static async has(key: string): Promise<boolean> {
+    try {
+      const prefs = PreferencesUtil.getPreferences()
+      return await prefs.has(key)
+    } catch {
+      return false
+    }
+  }
+
+  static async delete(key: string): Promise<void> {
+    try {
+      const prefs = PreferencesUtil.getPreferences()
+      await prefs.delete(key)
+      await prefs.flush()
+    } catch (error) {
+      hilog.error(PreferencesUtil.DOMAIN, PreferencesUtil.TAG, `Delete failed: ${error}`)
+    }
+  }
+
+  static async clear(): Promise<void> {
+    try {
+      const prefs = PreferencesUtil.getPreferences()
+      await prefs.clear()
+      await prefs.flush()
+    } catch (error) {
+      hilog.error(PreferencesUtil.DOMAIN, PreferencesUtil.TAG, `Clear failed: ${error}`)
+    }
+  }
+}
+
+/**
+ * 预定义 Key 常量
+ */
+export class PreferencesKeys {
+  static readonly IS_LOGGED_IN = 'is_logged_in'
+  static readonly USER_TOKEN = 'user_token'
+  static readonly USER_INFO = 'user_info'
+  static readonly THEME_MODE = 'theme_mode'
+  static readonly LANGUAGE = 'language'
+  static readonly IS_FIRST_LAUNCH = 'is_first_launch'
+  static readonly LAST_SYNC_TIME = 'last_sync_time'
+}
+'''
+
+
+def get_collaboration_manager() -> str:
+    """生成协同管理器 CollaborationManager.ets"""
+    return '''/**
+ * 分布式协同管理器
+ * 封装"碰一碰"连接的完整流程
+ *
+ * 使用方式:
+ * 1. Host 端: CollaborationManager.getInstance().createSession()
+ * 2. Guest 端: CollaborationManager.getInstance().joinSession(invite)
+ * 3. 销毁时: CollaborationManager.getInstance().destroy()
+ *
+ * ⚠️ 权限要求: 需要在 module.json5 中声明 ohos.permission.DISTRIBUTED_DATASYNC
+ */
+import { distributedDataObject } from '@kit.ArkData'
+import { hilog } from '@kit.PerformanceAnalysisKit'
+import { BusinessError } from '@kit.BasicServicesKit'
+
+/**
+ * 同步状态
+ */
+export enum SyncStatus {
+  ONLINE = 'online',
+  OFFLINE = 'offline',
+  RESTORED = 'restored'
+}
+
+/**
+ * 协同会话状态
+ */
+export enum CollaborationStatus {
+  WAITING = 'waiting',
+  CONNECTING = 'connecting',
+  CONNECTED = 'connected',
+  DISCONNECTED = 'disconnected'
+}
+
+/**
+ * 同步数据容器
+ * 使用 JSON 字符串封装，避免 ArkTS 索引签名限制
+ */
+export class SyncData {
+  /** 数据 JSON 字符串 */
+  data: string = '{}'
+  /** 数据版本号，用于变更检测 */
+  version: number = 0
+  /** 最后更新时间戳 */
+  timestamp: number = 0
+}
+
+/**
+ * 数据变更回调
+ */
+export type DataChangeCallback = (jsonData: string, changedFields: string[]) => void
+
+/**
+ * 状态变更回调
+ */
+export type StatusChangeCallback = (status: SyncStatus) => void
+
+/**
+ * 分布式数据同步管理器
+ * ⚠️ 需要权限: ohos.permission.DISTRIBUTED_DATASYNC
+ */
+export class DistributedSyncManager {
+  private static readonly TAG: string = 'DistributedSyncManager'
+  private static readonly DOMAIN: number = 0x0000
+
+  private dataObject: distributedDataObject.DataObject | null = null
+  private currentSessionId: string = ''
+  private isHost: boolean = false
+
+  private dataChangeCallback: DataChangeCallback | null = null
+  private statusChangeCallback: StatusChangeCallback | null = null
+  private changeListener: ((sessionId: string, fields: string[]) => void) | null = null
+  private statusListener: ((sessionId: string, networkId: string, status: string) => void) | null = null
+
+  /**
+   * 创建同步会话 (Host 端)
+   * ⚠️ 需要权限: ohos.permission.DISTRIBUTED_DATASYNC
+   * @param initialData 初始数据 JSON 字符串
+   */
+  async createSession(initialData: string = '{}'): Promise<string> {
+    try {
+      this.isHost = true
+      const syncData: SyncData = new SyncData()
+      syncData.data = initialData
+      syncData.version = 1
+      syncData.timestamp = Date.now()
+
+      this.dataObject = distributedDataObject.create(getContext(), syncData)
+      this.currentSessionId = distributedDataObject.genSessionId()
+
+      this.setupListeners()
+      await this.dataObject.setSessionId(this.currentSessionId)
+
+      hilog.info(DistributedSyncManager.DOMAIN, DistributedSyncManager.TAG,
+        `Session created: ${this.currentSessionId}`)
+
+      return this.currentSessionId
+    } catch (error) {
+      const err: BusinessError = error as BusinessError
+      hilog.error(DistributedSyncManager.DOMAIN, DistributedSyncManager.TAG,
+        `Create session failed: ${err.code} - ${err.message}`)
+      throw new Error(`Create session failed: ${err.message || String(error)}`)
+    }
+  }
+
+  /**
+   * 加入同步会话 (Guest 端)
+   * ⚠️ 需要权限: ohos.permission.DISTRIBUTED_DATASYNC
+   * @param sessionId 会话 ID
+   * @param initialData 初始数据 JSON 字符串
+   */
+  async joinSession(sessionId: string, initialData: string = '{}'): Promise<void> {
+    try {
+      this.isHost = false
+      this.currentSessionId = sessionId
+
+      const syncData: SyncData = new SyncData()
+      syncData.data = initialData
+      syncData.version = 0
+      syncData.timestamp = Date.now()
+
+      this.dataObject = distributedDataObject.create(getContext(), syncData)
+
+      this.setupListeners()
+      await this.dataObject.setSessionId(sessionId)
+
+      hilog.info(DistributedSyncManager.DOMAIN, DistributedSyncManager.TAG,
+        `Joined session: ${sessionId}`)
+    } catch (error) {
+      const err: BusinessError = error as BusinessError
+      hilog.error(DistributedSyncManager.DOMAIN, DistributedSyncManager.TAG,
+        `Join session failed: ${err.code} - ${err.message}`)
+      throw new Error(`Join session failed: ${err.message || String(error)}`)
+    }
+  }
+
+  /**
+   * 设置监听器
+   */
+  private setupListeners(): void {
+    if (!this.dataObject) return
+
+    // 数据变更监听
+    this.changeListener = (_sessionId: string, fields: string[]): void => {
+      hilog.info(DistributedSyncManager.DOMAIN, DistributedSyncManager.TAG,
+        `Data changed: ${fields.join(', ')}`)
+      if (this.dataChangeCallback) {
+        const data: string = this.getData()
+        this.dataChangeCallback(data, fields)
+      }
+    }
+    try {
+      this.dataObject.on('change', this.changeListener)
+    } catch (error) {
+      hilog.error(DistributedSyncManager.DOMAIN, DistributedSyncManager.TAG,
+        `Register change listener failed: ${String(error)}`)
+    }
+
+    // 状态变更监听
+    this.statusListener = (_sessionId: string, _networkId: string, status: string): void => {
+      hilog.info(DistributedSyncManager.DOMAIN, DistributedSyncManager.TAG,
+        `Status changed: ${status}`)
+      if (this.statusChangeCallback) {
+        this.statusChangeCallback(status as SyncStatus)
+      }
+      // 数据恢复时刷新
+      if (status === 'restored' && this.dataChangeCallback) {
+        const data: string = this.getData()
+        this.dataChangeCallback(data, ['data'])
+      }
+    }
+    try {
+      this.dataObject.on('status', this.statusListener)
+    } catch (error) {
+      hilog.error(DistributedSyncManager.DOMAIN, DistributedSyncManager.TAG,
+        `Register status listener failed: ${String(error)}`)
+    }
+  }
+
+  /**
+   * 注册数据变更回调
+   */
+  onDataChange(callback: DataChangeCallback): void {
+    this.dataChangeCallback = callback
+  }
+
+  /**
+   * 注册状态变更回调
+   */
+  onStatusChange(callback: StatusChangeCallback): void {
+    this.statusChangeCallback = callback
+  }
+
+  /**
+   * 获取当前数据 JSON 字符串
+   */
+  getData(): string {
+    if (!this.dataObject) return '{}'
+    // 使用 ESObject 访问动态属性
+    const obj: ESObject = this.dataObject
+    const data: string | undefined = obj.data
+    return data || '{}'
+  }
+
+  /**
+   * 获取数据版本号
+   */
+  getVersion(): number {
+    if (!this.dataObject) return 0
+    const obj: ESObject = this.dataObject
+    const version: number | undefined = obj.version
+    return version || 0
+  }
+
+  /**
+   * 更新数据
+   * @param jsonData JSON 字符串格式的数据
+   */
+  update(jsonData: string): void {
+    if (!this.dataObject) {
+      throw new Error('Session not initialized')
+    }
+    const obj: ESObject = this.dataObject
+    const currentVersion: number = obj.version || 0
+    obj.data = jsonData
+    obj.version = currentVersion + 1
+    obj.timestamp = Date.now()
+  }
+
+  /**
+   * 获取会话 ID
+   */
+  getSessionId(): string {
+    return this.currentSessionId
+  }
+
+  /**
+   * 是否为 Host
+   */
+  isHostDevice(): boolean {
+    return this.isHost
+  }
+
+  /**
+   * 销毁会话
+   * ⚠️ 必须在组件 aboutToDisappear 时调用
+   */
+  destroy(): void {
+    if (this.dataObject) {
+      // 显式解绑监听器 - 防止内存泄漏
+      if (this.changeListener) {
+        try {
+          this.dataObject.off('change', this.changeListener)
+        } catch (error) {
+          hilog.error(DistributedSyncManager.DOMAIN, DistributedSyncManager.TAG,
+            `Unregister change listener failed: ${String(error)}`)
+        }
+        this.changeListener = null
+      }
+      if (this.statusListener) {
+        try {
+          this.dataObject.off('status', this.statusListener)
+        } catch (error) {
+          hilog.error(DistributedSyncManager.DOMAIN, DistributedSyncManager.TAG,
+            `Unregister status listener failed: ${String(error)}`)
+        }
+        this.statusListener = null
+      }
+      this.dataObject = null
+    }
+    this.dataChangeCallback = null
+    this.statusChangeCallback = null
+    this.currentSessionId = ''
+    this.isHost = false
+
+    hilog.info(DistributedSyncManager.DOMAIN, DistributedSyncManager.TAG,
+      'Session destroyed')
+  }
+}
+
+/**
+ * 协同管理器单例
+ */
+export class CollaborationManager {
+  private static instance: CollaborationManager | null = null
+  private syncManager: DistributedSyncManager | null = null
+  private status: CollaborationStatus = CollaborationStatus.DISCONNECTED
+
+  private constructor() {}
+
+  static getInstance(): CollaborationManager {
+    if (!CollaborationManager.instance) {
+      CollaborationManager.instance = new CollaborationManager()
+    }
+    return CollaborationManager.instance
+  }
+
+  /**
+   * 创建会话
+   * @param jsonData 初始数据 JSON 字符串
+   */
+  async createSession(jsonData: string = '{}'): Promise<string> {
+    this.syncManager = new DistributedSyncManager()
+    this.status = CollaborationStatus.WAITING
+    return await this.syncManager.createSession(jsonData)
+  }
+
+  /**
+   * 加入会话
+   * @param sessionId 会话 ID
+   * @param jsonData 初始数据 JSON 字符串
+   */
+  async joinSession(sessionId: string, jsonData: string = '{}'): Promise<void> {
+    this.syncManager = new DistributedSyncManager()
+    this.status = CollaborationStatus.CONNECTING
+    await this.syncManager.joinSession(sessionId, jsonData)
+    this.status = CollaborationStatus.CONNECTED
+  }
+
+  getSyncManager(): DistributedSyncManager | null {
+    return this.syncManager
+  }
+
+  getStatus(): CollaborationStatus {
+    return this.status
+  }
+
+  destroy(): void {
+    if (this.syncManager) {
+      this.syncManager.destroy()
+      this.syncManager = null
+    }
+    this.status = CollaborationStatus.DISCONNECTED
+  }
+}
+'''
+
+
+def get_example_model() -> str:
+    """生成示例数据模型 Example.ets"""
+    return '''/**
+ * 示例数据模型
+ * 
+ * Model 层职责:
+ * - 定义数据结构 (interface)
+ * - 数据验证
+ * - 数据转换
+ */
+
+/**
+ * 用户信息模型
+ */
+export interface UserInfo {
+  id: string
+  name: string
+  avatar: string
+  phone: string
+  email?: string
+}
+
+/**
+ * 分页请求参数
+ */
+export interface PageRequest {
+  pageIndex: number
+  pageSize: number
+  keyword?: string
+}
+
+/**
+ * 分页响应结果
+ */
+export interface PageResponse<T> {
+  items: T[]
+  total: number
+  pageIndex: number
+  pageSize: number
+  hasMore: boolean
+}
+
+/**
+ * API 响应包装
+ */
+export interface ApiResponse<T> {
+  code: number
+  message: string
+  data: T
+}
+'''
+
+
 def get_profile_page() -> str:
     """生成个人中心页面 ProfilePage.ets"""
     return '''/**
@@ -944,7 +1735,10 @@ class HarmonyProjectGenerator:
             "entry/src/main/ets/entryability",
             "entry/src/main/ets/pages",
             "entry/src/main/ets/components",
-            "entry/src/main/ets/models",
+            "entry/src/main/ets/viewmodel",      # MVVM: ViewModel 层
+            "entry/src/main/ets/model",          # MVVM: Model 层
+            "entry/src/main/ets/database",       # 数据持久化层
+            "entry/src/main/ets/collaboration", # 分布式协同层
             "entry/src/main/ets/services",
             "entry/src/main/ets/utils",
             # 资源目录
@@ -1026,10 +1820,19 @@ class HarmonyProjectGenerator:
     def _create_code_files(self):
         """创建代码文件"""
         code_files = {
+            # 入口和页面
             "entry/src/main/ets/entryability/EntryAbility.ets": get_entry_ability(),
             "entry/src/main/ets/pages/Index.ets": get_index_page(),
             "entry/src/main/ets/pages/HomePage.ets": get_home_page(),
             "entry/src/main/ets/pages/ProfilePage.ets": get_profile_page(),
+            # MVVM 架构基础文件
+            "entry/src/main/ets/viewmodel/BaseViewModel.ets": get_base_viewmodel(),
+            "entry/src/main/ets/model/Models.ets": get_example_model(),
+            # 数据持久化基础文件
+            "entry/src/main/ets/database/DatabaseHelper.ets": get_database_helper(),
+            "entry/src/main/ets/utils/PreferencesUtil.ets": get_preferences_util(),
+            # 分布式协同基础文件
+            "entry/src/main/ets/collaboration/CollaborationManager.ets": get_collaboration_manager(),
         }
 
         for file_path, content in code_files.items():
