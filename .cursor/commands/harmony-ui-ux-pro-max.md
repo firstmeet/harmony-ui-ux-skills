@@ -76,6 +76,13 @@ An AI SKILL that provides design intelligence for building professional UI/UX fo
 | 碰一碰、NFC、协作 | `COLLABORATION_PATTERN.md` | WaitingForTapView |
 | 持久化、离线、缓存 | `STORAGE_GUIDE.md` | RDB + Offline-First |
 | MVVM、架构、ViewModel | `ARCHITECTURE.md` | @ObservedV2 + @Trace |
+| 登录、账号、支付 | `KITS_CATALOG.md` | Account Kit / IAP Kit |
+| 语音、OCR、人脸 | `AI_KITS_GUIDE.md` | Core Vision/Speech Kit |
+| 电商、外卖、办公 | `INDUSTRY_PRACTICES.md` | 行业开发方案 |
+| 推送、通知 | `KITS_CATALOG.md` | Push Kit / Notification Kit |
+| 地图、定位 | `KITS_CATALOG.md` | Map Kit / Location Kit |
+| 扫码、二维码 | `KITS_CATALOG.md` | Scan Kit |
+| 相机、拍照 | `KITS_CATALOG.md` | Camera Kit |
 
 ### 违规示例
 
@@ -199,6 +206,11 @@ Load these files for design intelligence:
 ### 性能与动画
 - `.shared/harmony-ui-ux-pro-max/PERFORMANCE_GUARD.md` - 性能约束和优化规范
 - `.shared/harmony-ui-ux-pro-max/ANIMATION_SYSTEM.md` - 动画曲线和转场规范
+
+### 系统能力与 Kit ⭐ NEW
+- `.shared/harmony-ui-ux-pro-max/KITS_CATALOG.md` - **HarmonyOS Kit 完整目录** - 60+ Kit 分类索引
+- `.shared/harmony-ui-ux-pro-max/AI_KITS_GUIDE.md` - **AI Kit 开发指南** - OCR/语音/NLP/智能体
+- `.shared/harmony-ui-ux-pro-max/INDUSTRY_PRACTICES.md` - **行业实践指南** - 17个行业开发方案
 
 ### 最佳实践
 - `.shared/harmony-ui-ux-pro-max/BEST_PRACTICES.md` - UI/UX best practices
@@ -1257,8 +1269,10 @@ Load these files for design intelligence:
 - `.shared/harmony-ui-ux-pro-max/RESOURCE_SYNC_RULES.md` - **⚠️ 资源同步规则**
 - `.shared/harmony-ui-ux-pro-max/ARCHITECTURE.md` - **⚠️ MVVM 架构规范**
 
-### 系统能力
-- `.shared/harmony-ui-ux-pro-max/SYSTEM_KITS.md` - **系统 Kit 集成指南**
+### 系统能力与 Kit ⭐ NEW
+- `.shared/harmony-ui-ux-pro-max/KITS_CATALOG.md` - **HarmonyOS Kit 完整目录** - 60+ Kit 索引
+- `.shared/harmony-ui-ux-pro-max/AI_KITS_GUIDE.md` - **AI Kit 开发指南** - OCR/语音/智能体
+- `.shared/harmony-ui-ux-pro-max/INDUSTRY_PRACTICES.md` - **行业实践指南** - 17个行业方案
 
 ### 数据持久化与分布式
 - `.shared/harmony-ui-ux-pro-max/STORAGE_GUIDE.md` - **RDB 和 Preferences 持久化指南**

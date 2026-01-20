@@ -26,6 +26,9 @@ Step 1: 识别关键词 → Step 2: 检索本地库 → Step 3: 禁止脑补 →
 | 分布式、跨设备 | DISTRIBUTED_SYNC.md |
 | 碰一碰、协作 | COLLABORATION_PATTERN.md |
 | 持久化、离线 | STORAGE_GUIDE.md |
+| 登录、支付、推送 | KITS_CATALOG.md |
+| AI、语音、OCR | AI_KITS_GUIDE.md |
+| 电商、外卖、办公 | INDUSTRY_PRACTICES.md |
 
 ### 输出格式
 
@@ -64,6 +67,22 @@ Step 1: 识别关键词 → Step 2: 检索本地库 → Step 3: 禁止脑补 →
 | File | Description |
 |------|-------------|
 | [BEST_PRACTICES.md](./BEST_PRACTICES.md) | UI/UX best practices and anti-patterns |
+
+### 系统能力与 Kit ⭐ NEW
+| File | Description |
+|------|-------------|
+| [KITS_CATALOG.md](./KITS_CATALOG.md) | **HarmonyOS Kit 完整目录** - 60+ Kit 分类与使用场景 |
+| [AI_KITS_GUIDE.md](./AI_KITS_GUIDE.md) | **AI Kit 开发指南** - OCR/语音/NLP/智能体 |
+| [INDUSTRY_PRACTICES.md](./INDUSTRY_PRACTICES.md) | **行业实践指南** - 17个行业开发方案 |
+
+### 高级功能
+| File | Description |
+|------|-------------|
+| [LIVE_VIEW_GUIDE.md](./LIVE_VIEW_GUIDE.md) | 实况窗开发指南 |
+| [DISTRIBUTED_SYNC.md](./DISTRIBUTED_SYNC.md) | 分布式数据同步与流转 |
+| [COLLABORATION_PATTERN.md](./COLLABORATION_PATTERN.md) | 分布式协同协议 (碰一碰) |
+| [STORAGE_GUIDE.md](./STORAGE_GUIDE.md) | RDB 和 Preferences 持久化 |
+| [ARCHITECTURE.md](./ARCHITECTURE.md) | MVVM 架构规范 |
 
 ## Mandatory Rules Summary
 
